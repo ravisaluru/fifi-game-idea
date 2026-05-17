@@ -7,6 +7,7 @@ import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/virtual_controls.dart';
+import '../widgets/multiplayer_scoreboard.dart';
 
 class SnakeChaseScreen extends StatefulWidget {
   const SnakeChaseScreen({super.key});
@@ -219,6 +220,13 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
                   ),
                 ),
               ),
+
+              // Multiplayer scoreboard
+              if (state.isMultiplayer)
+                MultiplayerScoreboard(
+                  session: state.multiplayerSession!,
+                  worldId: WorldId.snake,
+                ),
 
               // Virtual controls
               VirtualControls(

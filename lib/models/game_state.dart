@@ -1,6 +1,9 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'character.dart';
+import 'multiplayer_session.dart';
+
+export 'multiplayer_session.dart';
 
 enum WorldId { tiger, firefly, bubble, stones, star, snake, treasure }
 
@@ -10,6 +13,9 @@ class GameState extends ChangeNotifier {
   int worldsCompleted = 0;
   WorldId? lastWorld;
   Character? selectedCharacter;
+  MultiplayerSession? multiplayerSession;
+
+  bool get isMultiplayer => multiplayerSession != null;
 
   void resetForWorld() {
     lives = 3;
@@ -33,6 +39,16 @@ class GameState extends ChangeNotifier {
 
   void selectCharacter(Character character) {
     selectedCharacter = character;
+    notifyListeners();
+  }
+
+  void setMultiplayerSession(MultiplayerSession? session) {
+    multiplayerSession = session;
+    notifyListeners();
+  }
+
+  void clearMultiplayerSession() {
+    multiplayerSession = null;
     notifyListeners();
   }
 

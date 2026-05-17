@@ -136,6 +136,38 @@ class _HomeScreenState extends State<HomeScreen>
                       fontStyle: FontStyle.italic,
                     ),
                   ),
+
+                  const SizedBox(height: 20),
+
+                  // Multiplayer button
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/multiplayer'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                            color: Colors.white.withOpacity(0.4), width: 1.5),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('👥', style: TextStyle(fontSize: 20)),
+                          SizedBox(width: 8),
+                          Text(
+                            'Play with Others',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   const Spacer(),
                 ],
               ),

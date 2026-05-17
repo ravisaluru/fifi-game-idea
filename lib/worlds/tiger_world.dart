@@ -7,6 +7,7 @@ import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/virtual_controls.dart';
+import '../widgets/multiplayer_scoreboard.dart';
 
 enum _TigerState { lookingAway, turningAround, lookingAtYou, turningAway }
 
@@ -234,6 +235,13 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                     ],
                   ),
                 ),
+
+                // Multiplayer scoreboard
+                if (state.isMultiplayer)
+                  MultiplayerScoreboard(
+                    session: state.multiplayerSession!,
+                    worldId: WorldId.tiger,
+                  ),
 
                 // Virtual controls
                 VirtualControls(
