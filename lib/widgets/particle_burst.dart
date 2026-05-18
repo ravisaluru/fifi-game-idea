@@ -24,10 +24,12 @@ class _ParticleBurstState extends State<ParticleBurst>
   void initState() {
     super.initState();
     final rng = Random();
-    _particles = List.generate(widget.particleCount, (_) => _Particle(
-      angle: rng.nextDouble() * 2 * pi,
-      speed: 40 + rng.nextDouble() * 60,
-    ));
+    _particles = List.generate(
+        widget.particleCount,
+        (_) => _Particle(
+              angle: rng.nextDouble() * 2 * pi,
+              speed: 40 + rng.nextDouble() * 60,
+            ));
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),

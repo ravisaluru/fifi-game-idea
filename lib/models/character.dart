@@ -29,12 +29,36 @@ class Character {
 }
 
 final List<Character> availableCharacters = [
-  Character(id: 'fifi',  displayName: 'Fifi',  emoji: '👧', outfitColor: const Color(0xFFE91E63)),
-  Character(id: 'leo',   displayName: 'Leo',   emoji: '👦', outfitColor: const Color(0xFF2196F3)),
-  Character(id: 'zara',  displayName: 'Zara',  emoji: '🥷', outfitColor: const Color(0xFF9C27B0)),
-  Character(id: 'milo',  displayName: 'Milo',  emoji: '🧭', outfitColor: const Color(0xFFFF9800)),
-  Character(id: 'luna',  displayName: 'Luna',  emoji: '🧚', outfitColor: const Color(0xFF00BCD4)),
-  Character(id: 'rex',   displayName: 'Rex',   emoji: '🦕', outfitColor: const Color(0xFF4CAF50)),
+  Character(
+      id: 'fifi',
+      displayName: 'Fifi',
+      emoji: '👧',
+      outfitColor: const Color(0xFFE91E63)),
+  Character(
+      id: 'leo',
+      displayName: 'Leo',
+      emoji: '👦',
+      outfitColor: const Color(0xFF2196F3)),
+  Character(
+      id: 'zara',
+      displayName: 'Zara',
+      emoji: '🥷',
+      outfitColor: const Color(0xFF9C27B0)),
+  Character(
+      id: 'milo',
+      displayName: 'Milo',
+      emoji: '🧭',
+      outfitColor: const Color(0xFFFF9800)),
+  Character(
+      id: 'luna',
+      displayName: 'Luna',
+      emoji: '🧚',
+      outfitColor: const Color(0xFF00BCD4)),
+  Character(
+      id: 'rex',
+      displayName: 'Rex',
+      emoji: '🦕',
+      outfitColor: const Color(0xFF4CAF50)),
 ];
 
 const List<Color> outfitColors = [
@@ -49,9 +73,9 @@ const List<Color> outfitColors = [
 ];
 
 const Map<AccessoryType, String> accessoryEmojis = {
-  AccessoryType.none:   '✕',
-  AccessoryType.hat:    '🎩',
-  AccessoryType.cape:   '🦸',
+  AccessoryType.none: '✕',
+  AccessoryType.hat: '🎩',
+  AccessoryType.cape: '🦸',
   AccessoryType.shield: '🛡️',
-  AccessoryType.wand:   '🪄',
+  AccessoryType.wand: '🪄',
 };

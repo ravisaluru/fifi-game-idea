@@ -19,13 +19,16 @@ class _LivesHudState extends State<LivesHud> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _prevLives = widget.lives;
-    _pulseControllers = List.generate(widget.maxLives, (_) =>
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 300)));
-    _pulseAnims = _pulseControllers.map((c) =>
-      TweenSequence<double>([
-        TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 1),
-        TweenSequenceItem(tween: Tween(begin: 1.4, end: 0.7), weight: 1),
-      ]).animate(c)).toList();
+    _pulseControllers = List.generate(
+        widget.maxLives,
+        (_) => AnimationController(
+            vsync: this, duration: const Duration(milliseconds: 300)));
+    _pulseAnims = _pulseControllers
+        .map((c) => TweenSequence<double>([
+              TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.4), weight: 1),
+              TweenSequenceItem(tween: Tween(begin: 1.4, end: 0.7), weight: 1),
+            ]).animate(c))
+        .toList();
   }
 
   @override
@@ -42,7 +45,9 @@ class _LivesHudState extends State<LivesHud> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    for (final c in _pulseControllers) { c.dispose(); }
+    for (final c in _pulseControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 

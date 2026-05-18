@@ -15,8 +15,10 @@ class _ChestSpot {
   bool found = false;
 
   _ChestSpot({
-    required this.id, required this.pos,
-    required this.coins, required this.coverEmoji,
+    required this.id,
+    required this.pos,
+    required this.coins,
+    required this.coverEmoji,
   });
 }
 
@@ -26,7 +28,10 @@ class _AiOpponent {
   int coins = 0;
   double discoverInterval; // seconds
 
-  _AiOpponent({required this.emoji, required this.name, required this.discoverInterval});
+  _AiOpponent(
+      {required this.emoji,
+      required this.name,
+      required this.discoverInterval});
 }
 
 class TreasureHuntScreen extends StatefulWidget {
@@ -56,7 +61,14 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
   final Random _rng = Random();
 
   static const List<String> _coverEmojis = [
-    '🍃', '🪨', '🌿', '🍂', '🌱', '🪵', '🌾', '🍁',
+    '🍃',
+    '🪨',
+    '🌿',
+    '🍂',
+    '🌱',
+    '🪵',
+    '🌾',
+    '🍁',
   ];
 
   @override
@@ -64,12 +76,15 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
     super.initState();
     context.read<GameState>().resetForWorld();
 
-    _chests = List.generate(_chestCount, (i) => _ChestSpot(
-      id: i,
-      pos: Offset(0.06 + _rng.nextDouble() * 0.88, 0.12 + _rng.nextDouble() * 0.72),
-      coins: 1 + _rng.nextInt(5),
-      coverEmoji: _coverEmojis[_rng.nextInt(_coverEmojis.length)],
-    ));
+    _chests = List.generate(
+        _chestCount,
+        (i) => _ChestSpot(
+              id: i,
+              pos: Offset(0.06 + _rng.nextDouble() * 0.88,
+                  0.12 + _rng.nextDouble() * 0.72),
+              coins: 1 + _rng.nextInt(5),
+              coverEmoji: _coverEmojis[_rng.nextInt(_coverEmojis.length)],
+            ));
 
     _opponents = [
       _AiOpponent(emoji: '🤖', name: 'Robo', discoverInterval: 3.5),
@@ -77,7 +92,8 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
     ];
 
     _ticker = AnimationController(
-      vsync: this, duration: const Duration(seconds: 120),
+      vsync: this,
+      duration: const Duration(seconds: 120),
     )..repeat();
     _ticker.addListener(_onTick);
 
@@ -179,7 +195,9 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
             children: [
               // Timer
               Positioned(
-                top: 12, left: 0, right: 0,
+                top: 12,
+                left: 0,
+                right: 0,
                 child: Center(
                   child: AnimatedDefaultTextStyle(
                     duration: const Duration(milliseconds: 300),
@@ -195,21 +213,25 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
 
               // Scoreboard
               Positioned(
-                top: 40, left: 0, right: 0,
+                top: 40,
+                left: 0,
+                right: 0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _ScoreChip(
-                      emoji: context.read<GameState>().selectedCharacter?.emoji ?? '🧒',
+                      emoji:
+                          context.read<GameState>().selectedCharacter?.emoji ??
+                              '🧒',
                       name: 'You',
                       coins: _playerCoins,
                       highlight: true,
                     ),
                     ..._opponents.map((a) => _ScoreChip(
-                      emoji: a.emoji,
-                      name: a.name,
-                      coins: a.coins,
-                    )),
+                          emoji: a.emoji,
+                          name: a.name,
+                          coins: a.coins,
+                        )),
                   ],
                 ),
               ),
@@ -232,10 +254,10 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
 
               // Found chests (coin burst placeholder)
               ..._chests.where((c) => c.found).map((chest) => Positioned(
-                left: chest.pos.dx * size.width - 12,
-                top: chest.pos.dy * size.height - 12,
-                child: const Text('🪙', style: TextStyle(fontSize: 20)),
-              )),
+                    left: chest.pos.dx * size.width - 12,
+                    top: chest.pos.dy * size.height - 12,
+                    child: const Text('🪙', style: TextStyle(fontSize: 20)),
+                  )),
 
               // Player
               AnimatedBuilder(
@@ -272,7 +294,9 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
 
               // Hint
               Positioned(
-                bottom: 150, left: 0, right: 0,
+                bottom: 150,
+                left: 0,
+                right: 0,
                 child: Center(
                   child: Text(
                     'Tap leaves & rocks to find chests! 🎁',
@@ -297,8 +321,10 @@ class _ScoreChip extends StatelessWidget {
   final bool highlight;
 
   const _ScoreChip({
-    required this.emoji, required this.name,
-    required this.coins, this.highlight = false,
+    required this.emoji,
+    required this.name,
+    required this.coins,
+    this.highlight = false,
   });
 
   @override
@@ -311,7 +337,8 @@ class _ScoreChip extends StatelessWidget {
             : Colors.black.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(12),
         border: highlight
-            ? Border.all(color: Colors.yellow.withValues(alpha: 0.6), width: 1.5)
+            ? Border.all(
+                color: Colors.yellow.withValues(alpha: 0.6), width: 1.5)
             : null,
       ),
       child: Row(

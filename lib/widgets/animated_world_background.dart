@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 enum WeatherType { sunny, cloudy, lightRain }
+
 enum BackgroundTheme { meadow, forest, night, river, grassland }
 
 class AnimatedWorldBackground extends StatefulWidget {
@@ -54,27 +55,33 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
       duration: const Duration(milliseconds: 800),
     )..repeat();
 
-    _clouds = List.generate(4, (i) => _CloudData(
-      x: _rng.nextDouble(),
-      y: 0.05 + _rng.nextDouble() * 0.15,
-      scale: 0.6 + _rng.nextDouble() * 0.7,
-      speed: 0.01 + _rng.nextDouble() * 0.02,
-    ));
+    _clouds = List.generate(
+        4,
+        (i) => _CloudData(
+              x: _rng.nextDouble(),
+              y: 0.05 + _rng.nextDouble() * 0.15,
+              scale: 0.6 + _rng.nextDouble() * 0.7,
+              speed: 0.01 + _rng.nextDouble() * 0.02,
+            ));
 
-    _rainDrops = List.generate(40, (i) => _RainDrop(
-      x: _rng.nextDouble(),
-      y: _rng.nextDouble(),
-      length: 8 + _rng.nextDouble() * 12,
-      speed: 0.015 + _rng.nextDouble() * 0.01,
-    ));
+    _rainDrops = List.generate(
+        40,
+        (i) => _RainDrop(
+              x: _rng.nextDouble(),
+              y: _rng.nextDouble(),
+              length: 8 + _rng.nextDouble() * 12,
+              speed: 0.015 + _rng.nextDouble() * 0.01,
+            ));
 
-    _trees = List.generate(6, (i) => _TreeData(
-      x: 0.05 + i * 0.17 + _rng.nextDouble() * 0.05,
-      height: 0.18 + _rng.nextDouble() * 0.12,
-      trunkWidth: 10 + _rng.nextDouble() * 6,
-      layers: 2 + _rng.nextInt(2),
-      color: _treeColorForTheme(widget.theme),
-    ));
+    _trees = List.generate(
+        6,
+        (i) => _TreeData(
+              x: 0.05 + i * 0.17 + _rng.nextDouble() * 0.05,
+              height: 0.18 + _rng.nextDouble() * 0.12,
+              trunkWidth: 10 + _rng.nextDouble() * 6,
+              layers: 2 + _rng.nextInt(2),
+              color: _treeColorForTheme(widget.theme),
+            ));
 
     _driftController = AnimationController(
       vsync: this,
@@ -82,16 +89,20 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
     )..repeat();
 
     _driftBlobs = [
-      _DriftBlob(xBase: 0.05, y: 0.06, width: 100, height: 28, phaseOffset: 0.0),
-      _DriftBlob(xBase: 0.40, y: 0.11, width: 130, height: 32, phaseOffset: 1.1),
+      _DriftBlob(
+          xBase: 0.05, y: 0.06, width: 100, height: 28, phaseOffset: 0.0),
+      _DriftBlob(
+          xBase: 0.40, y: 0.11, width: 130, height: 32, phaseOffset: 1.1),
       _DriftBlob(xBase: 0.72, y: 0.07, width: 90, height: 24, phaseOffset: 2.2),
     ];
 
-    _riverParticles = List.generate(20, (i) => _RiverParticle(
-      x: _rng.nextDouble(),
-      yBase: _rng.nextDouble(),
-      phaseOffset: _rng.nextDouble() * 2 * pi,
-    ));
+    _riverParticles = List.generate(
+        20,
+        (i) => _RiverParticle(
+              x: _rng.nextDouble(),
+              yBase: _rng.nextDouble(),
+              phaseOffset: _rng.nextDouble() * 2 * pi,
+            ));
   }
 
   Color _treeColorForTheme(BackgroundTheme t) {
@@ -158,7 +169,10 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
 
       return AnimatedBuilder(
         animation: Listenable.merge([
-          _grassController, _cloudController, _rainController, _driftController,
+          _grassController,
+          _cloudController,
+          _rainController,
+          _driftController,
         ]),
         builder: (context, _) {
           // Update cloud positions
@@ -201,31 +215,31 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
 
               // Clouds
               ..._clouds.map((c) => Positioned(
-                left: c.x * w - 40,
-                top: c.y * h,
-                child: Opacity(
-                  opacity: _weather == WeatherType.cloudy ? 0.85 : 0.5,
-                  child: CustomPaint(
-                    size: Size(90 * c.scale, 45 * c.scale),
-                    painter: _CloudPainter(),
-                  ),
-                ),
-              )),
+                    left: c.x * w - 40,
+                    top: c.y * h,
+                    child: Opacity(
+                      opacity: _weather == WeatherType.cloudy ? 0.85 : 0.5,
+                      child: CustomPaint(
+                        size: Size(90 * c.scale, 45 * c.scale),
+                        painter: _CloudPainter(),
+                      ),
+                    ),
+                  )),
 
               // Trees
               ...(_trees.map((t) => Positioned(
-                left: t.x * w - 20,
-                bottom: h * 0.22,
-                child: CustomPaint(
-                  size: Size(50, h * t.height),
-                  painter: _TreePainter(
-                    layers: t.layers,
-                    trunkWidth: t.trunkWidth,
-                    color: t.color,
-                    sway: _grassController.value,
-                  ),
-                ),
-              ))),
+                    left: t.x * w - 20,
+                    bottom: h * 0.22,
+                    child: CustomPaint(
+                      size: Size(50, h * t.height),
+                      painter: _TreePainter(
+                        layers: t.layers,
+                        trunkWidth: t.trunkWidth,
+                        color: t.color,
+                        sway: _grassController.value,
+                      ),
+                    ),
+                  ))),
 
               // Ground / grass strip
               Positioned(
@@ -284,7 +298,9 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
               if (widget.theme == BackgroundTheme.river)
                 ..._riverParticles.map((p) {
                   final t = _driftController.value;
-                  final rawY = p.yBase - t * 0.4 + sin(t * 2 * pi * 3 + p.phaseOffset) * 0.03;
+                  final rawY = p.yBase -
+                      t * 0.4 +
+                      sin(t * 2 * pi * 3 + p.phaseOffset) * 0.03;
                   final y = rawY % 1.0;
                   return Positioned(
                     left: p.x * w,
@@ -317,17 +333,19 @@ class _GrassPainter extends CustomPainter {
   final double swayValue;
   final bool isRiver;
 
-  _GrassPainter({required this.color, required this.swayValue, required this.isRiver});
+  _GrassPainter(
+      {required this.color, required this.swayValue, required this.isRiver});
 
   @override
   void paint(Canvas canvas, Size size) {
     if (isRiver) {
       // Animated water
-      final paint = Paint()..shader = LinearGradient(
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-        colors: [const Color(0xFF1E88E5), const Color(0xFF0D47A1)],
-      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+      final paint = Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [const Color(0xFF1E88E5), const Color(0xFF0D47A1)],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
       canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 
       // Wave lines
@@ -352,13 +370,18 @@ class _GrassPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [color, color.withGreen(((color.g * 255.0).round().clamp(0, 255) - 20).clamp(0, 255))],
+        colors: [
+          color,
+          color.withGreen(
+              ((color.g * 255.0).round().clamp(0, 255) - 20).clamp(0, 255))
+        ],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), basePaint);
 
     // Grass blades
     final bladePaint = Paint()
-      ..color = color.withGreen(((color.g * 255.0).round().clamp(0, 255) + 30).clamp(0, 255))
+      ..color = color.withGreen(
+          ((color.g * 255.0).round().clamp(0, 255) + 30).clamp(0, 255))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
@@ -370,7 +393,8 @@ class _GrassPainter extends CustomPainter {
       final sway = sin(swayValue * pi + i * 0.7) * 3;
       final path = Path()
         ..moveTo(x, 4)
-        ..quadraticBezierTo(x + sway, 4 + bladeHeight * 0.5, x + sway * 1.5, 4 + bladeHeight);
+        ..quadraticBezierTo(
+            x + sway, 4 + bladeHeight * 0.5, x + sway * 1.5, 4 + bladeHeight);
       canvas.drawPath(path, bladePaint);
     }
   }
@@ -397,7 +421,8 @@ class _TreePainter extends CustomPainter {
     final trunkPaint = Paint()..color = const Color(0xFF5D4037);
     final foliagePaint = Paint()..color = color;
     final highlightPaint = Paint()
-      ..color = color.withGreen(((color.g * 255.0).round().clamp(0, 255) + 40).clamp(0, 255));
+      ..color = color.withGreen(
+          ((color.g * 255.0).round().clamp(0, 255) + 40).clamp(0, 255));
 
     final swayAngle = sin(sway * pi) * 0.04;
     canvas.save();
@@ -449,12 +474,18 @@ class _CloudPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = Colors.white;
-    canvas.drawOval(Rect.fromLTWH(size.width * 0.1, size.height * 0.3,
-        size.width * 0.5, size.height * 0.6), paint);
-    canvas.drawOval(Rect.fromLTWH(size.width * 0.35, size.height * 0.1,
-        size.width * 0.4, size.height * 0.55), paint);
-    canvas.drawOval(Rect.fromLTWH(size.width * 0.55, size.height * 0.25,
-        size.width * 0.4, size.height * 0.55), paint);
+    canvas.drawOval(
+        Rect.fromLTWH(size.width * 0.1, size.height * 0.3, size.width * 0.5,
+            size.height * 0.6),
+        paint);
+    canvas.drawOval(
+        Rect.fromLTWH(size.width * 0.35, size.height * 0.1, size.width * 0.4,
+            size.height * 0.55),
+        paint);
+    canvas.drawOval(
+        Rect.fromLTWH(size.width * 0.55, size.height * 0.25, size.width * 0.4,
+            size.height * 0.55),
+        paint);
   }
 
   @override
@@ -531,7 +562,8 @@ class _StarsPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(x, y),
         1.5 + rng.nextDouble() * 1.5,
-        Paint()..color = Colors.white.withValues(alpha: opacity.clamp(0.1, 0.9)),
+        Paint()
+          ..color = Colors.white.withValues(alpha: opacity.clamp(0.1, 0.9)),
       );
     }
   }
@@ -543,12 +575,20 @@ class _StarsPainter extends CustomPainter {
 // Data classes
 class _CloudData {
   double x, y, scale, speed;
-  _CloudData({required this.x, required this.y, required this.scale, required this.speed});
+  _CloudData(
+      {required this.x,
+      required this.y,
+      required this.scale,
+      required this.speed});
 }
 
 class _RainDrop {
   double x, y, length, speed;
-  _RainDrop({required this.x, required this.y, required this.length, required this.speed});
+  _RainDrop(
+      {required this.x,
+      required this.y,
+      required this.length,
+      required this.speed});
 }
 
 class _TreeData {
@@ -556,8 +596,11 @@ class _TreeData {
   int layers;
   Color color;
   _TreeData({
-    required this.x, required this.height, required this.trunkWidth,
-    required this.layers, required this.color,
+    required this.x,
+    required this.height,
+    required this.trunkWidth,
+    required this.layers,
+    required this.color,
   });
 }
 
@@ -568,8 +611,10 @@ class _DriftBlob {
   final double height;
   final double phaseOffset;
   _DriftBlob({
-    required this.xBase, required this.y,
-    required this.width, required this.height,
+    required this.xBase,
+    required this.y,
+    required this.width,
+    required this.height,
     required this.phaseOffset,
   });
 }
@@ -578,7 +623,8 @@ class _RiverParticle {
   final double x;
   double yBase;
   final double phaseOffset;
-  _RiverParticle({required this.x, required this.yBase, required this.phaseOffset});
+  _RiverParticle(
+      {required this.x, required this.yBase, required this.phaseOffset});
 }
 
 // Extension for Path sinusoidal lines

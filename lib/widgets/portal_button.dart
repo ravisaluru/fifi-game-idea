@@ -73,7 +73,8 @@ class _PortalButtonState extends State<PortalButton>
       onTapUp: _onTapUp,
       onTapCancel: _onTapCancel,
       child: AnimatedBuilder(
-        animation: Listenable.merge([_pulseAnim, _pressAnim, _rotateController]),
+        animation:
+            Listenable.merge([_pulseAnim, _pressAnim, _rotateController]),
         builder: (context, child) {
           return Transform.scale(
             scale: _pulseAnim.value * _pressAnim.value,

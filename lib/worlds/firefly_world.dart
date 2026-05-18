@@ -34,24 +34,30 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
     super.initState();
     context.read<GameState>().resetForWorld();
 
-    _glowControllers = List.generate(_totalFireflies, (_) =>
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 500)));
-    _glowAnims = _glowControllers.map((c) =>
-      CurvedAnimation(parent: c, curve: Curves.easeInOut)).toList();
+    _glowControllers = List.generate(
+        _totalFireflies,
+        (_) => AnimationController(
+            vsync: this, duration: const Duration(milliseconds: 500)));
+    _glowAnims = _glowControllers
+        .map((c) => CurvedAnimation(parent: c, curve: Curves.easeInOut))
+        .toList();
 
     Future.delayed(const Duration(milliseconds: 800), _startRound);
   }
 
   @override
   void dispose() {
-    for (final c in _glowControllers) { c.dispose(); }
+    for (final c in _glowControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
   void _startRound() {
     if (!mounted) return;
     if (_sequence.isEmpty) {
-      _sequence = List.generate(_sequenceLength, (_) => Random().nextInt(_totalFireflies));
+      _sequence = List.generate(
+          _sequenceLength, (_) => Random().nextInt(_totalFireflies));
     } else {
       _sequence.add(Random().nextInt(_totalFireflies));
     }
@@ -81,8 +87,9 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
     if (!_playerCanTap) return;
     final state = context.read<GameState>();
 
-    _glowControllers[index].forward(from: 0).then((_) =>
-        _glowControllers[index].reverse());
+    _glowControllers[index]
+        .forward(from: 0)
+        .then((_) => _glowControllers[index].reverse());
 
     _playerTaps.add(index);
     final tapPos = _playerTaps.length - 1;
@@ -118,14 +125,17 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
     context.read<GameState>().completeWorld(WorldId.firefly);
     context.read<GameState>().addCoins(5);
     Navigator.pushReplacementNamed(
-      context, '/victory',
-      arguments: const VictoryArgs(didWin: true, coinsEarned: 5, worldName: 'Firefly Forest'),
+      context,
+      '/victory',
+      arguments: const VictoryArgs(
+          didWin: true, coinsEarned: 5, worldName: 'Firefly Forest'),
     );
   }
 
   void _onLose() {
     Navigator.pushReplacementNamed(
-      context, '/victory',
+      context,
+      '/victory',
       arguments: const VictoryArgs(didWin: false, worldName: 'Firefly Forest'),
     );
   }
@@ -152,11 +162,13 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
             children: [
               // HUD
               Positioned(
-                top: 12, left: 16,
+                top: 12,
+                left: 16,
                 child: LivesHud(lives: state.lives),
               ),
               Positioned(
-                top: 12, right: 16,
+                top: 12,
+                right: 16,
                 child: Text(
                   'Round ${_roundsWon + 1}/$_winsNeeded',
                   style: const TextStyle(color: Colors.white70, fontSize: 16),
@@ -165,10 +177,14 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
 
               // Instruction
               Positioned(
-                top: 52, left: 0, right: 0,
+                top: 52,
+                left: 0,
+                right: 0,
                 child: Center(
                   child: Text(
-                    _isShowingSequence ? 'Watch carefully...' : 'Your turn! Tap them!',
+                    _isShowingSequence
+                        ? 'Watch carefully...'
+                        : 'Your turn! Tap them!',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -179,46 +195,51 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
               ),
 
               // Fireflies
-              ...List.generate(_totalFireflies, (i) => Positioned(
-                left: positions[i].dx - 40,
-                top: positions[i].dy - 40,
-                child: GestureDetector(
-                  onTap: () => _onFireflyTap(i),
-                  child: AnimatedBuilder(
-                    animation: _glowAnims[i],
-                    builder: (context, _) {
-                      final glow = _glowAnims[i].value;
-                      return Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color.lerp(
-                            Colors.transparent,
-                            const Color(0xFFCCFF90),
-                            glow,
+              ...List.generate(
+                  _totalFireflies,
+                  (i) => Positioned(
+                        left: positions[i].dx - 40,
+                        top: positions[i].dy - 40,
+                        child: GestureDetector(
+                          onTap: () => _onFireflyTap(i),
+                          child: AnimatedBuilder(
+                            animation: _glowAnims[i],
+                            builder: (context, _) {
+                              final glow = _glowAnims[i].value;
+                              return Container(
+                                width: 80,
+                                height: 80,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color.lerp(
+                                    Colors.transparent,
+                                    const Color(0xFFCCFF90),
+                                    glow,
+                                  ),
+                                  boxShadow: glow > 0.1
+                                      ? [
+                                          BoxShadow(
+                                            color: const Color(0xFF76FF03)
+                                                .withValues(alpha: glow * 0.8),
+                                            blurRadius: 24 * glow,
+                                            spreadRadius: 8 * glow,
+                                          )
+                                        ]
+                                      : null,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '✨',
+                                    style: TextStyle(
+                                      fontSize: 28 + glow * 12,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
                           ),
-                          boxShadow: glow > 0.1
-                              ? [BoxShadow(
-                                  color: const Color(0xFF76FF03).withValues(alpha: glow * 0.8),
-                                  blurRadius: 24 * glow,
-                                  spreadRadius: 8 * glow,
-                                )]
-                              : null,
                         ),
-                        child: Center(
-                          child: Text(
-                            '✨',
-                            style: TextStyle(
-                              fontSize: 28 + glow * 12,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              )),
+                      )),
             ],
           ),
         ),

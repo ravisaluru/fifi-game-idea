@@ -137,13 +137,15 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
     context.read<GameState>().completeWorld(WorldId.snake);
     context.read<GameState>().addCoins(8);
     Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(didWin: true, coinsEarned: 8, worldName: 'Snake Grassland'));
+        arguments: const VictoryArgs(
+            didWin: true, coinsEarned: 8, worldName: 'Snake Grassland'));
   }
 
   void _onLose() {
     _countdownTimer?.cancel();
     Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(didWin: false, worldName: 'Snake Grassland'));
+        arguments:
+            const VictoryArgs(didWin: false, worldName: 'Snake Grassland'));
   }
 
   @override
@@ -159,11 +161,13 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
         child: SafeArea(
           child: Stack(
             children: [
-              Positioned(top: 12, left: 16, child: LivesHud(lives: state.lives)),
+              Positioned(
+                  top: 12, left: 16, child: LivesHud(lives: state.lives)),
 
               // Timer
               Positioned(
-                top: 12, right: 16,
+                top: 12,
+                right: 16,
                 child: AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 300),
                   style: TextStyle(
@@ -177,10 +181,14 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
 
               // Instruction
               Positioned(
-                top: 56, left: 0, right: 0,
+                top: 56,
+                left: 0,
+                right: 0,
                 child: Center(
                   child: Text(
-                    _stunnedAfterCatch ? '😵 Ouch! Keep running!' : 'Run from the snake! 🐍',
+                    _stunnedAfterCatch
+                        ? '😵 Ouch! Keep running!'
+                        : 'Run from the snake! 🐍',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 16,
@@ -215,7 +223,8 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
                   child: Text(
                     _stunnedAfterCatch
                         ? '😵'
-                        : (context.read<GameState>().selectedCharacter?.emoji ?? '🏃'),
+                        : (context.read<GameState>().selectedCharacter?.emoji ??
+                            '🏃'),
                     style: const TextStyle(fontSize: 44),
                   ),
                 ),

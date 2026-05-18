@@ -21,10 +21,10 @@ class _Bubble {
 }
 
 const Map<_BubbleColor, Color> _colorMap = {
-  _BubbleColor.red:    Color(0xFFEF5350),
+  _BubbleColor.red: Color(0xFFEF5350),
   _BubbleColor.yellow: Color(0xFFFFEE58),
-  _BubbleColor.blue:   Color(0xFF42A5F5),
-  _BubbleColor.green:  Color(0xFF66BB6A),
+  _BubbleColor.blue: Color(0xFF42A5F5),
+  _BubbleColor.green: Color(0xFF66BB6A),
   _BubbleColor.purple: Color(0xFFAB47BC),
 };
 
@@ -55,7 +55,8 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   void _initBubbles() {
     final rng = Random();
     final colors = _BubbleColor.values.toList()..shuffle(rng);
-    final pairs = colors.take(_pairs).expand((c) => [c, c]).toList()..shuffle(rng);
+    final pairs = colors.take(_pairs).expand((c) => [c, c]).toList()
+      ..shuffle(rng);
 
     _bubbles = List.generate(pairs.length, (i) {
       final b = _Bubble(
@@ -82,7 +83,9 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
 
   @override
   void dispose() {
-    for (final b in _bubbles) { b.controller.dispose(); }
+    for (final b in _bubbles) {
+      b.controller.dispose();
+    }
     super.dispose();
   }
 
@@ -130,7 +133,8 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
     context.read<GameState>().completeWorld(WorldId.bubble);
     context.read<GameState>().addCoins(5);
     Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(didWin: true, coinsEarned: 5, worldName: 'Bubble Sky'));
+        arguments: const VictoryArgs(
+            didWin: true, coinsEarned: 5, worldName: 'Bubble Sky'));
   }
 
   void _onLose() {
@@ -149,19 +153,22 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         child: SafeArea(
           child: Stack(
             children: [
-              Positioned(top: 12, left: 16, child: LivesHud(lives: state.lives)),
               Positioned(
-                top: 12, right: 16,
+                  top: 12, left: 16, child: LivesHud(lives: state.lives)),
+              Positioned(
+                top: 12,
+                right: 16,
                 child: Text('Pop matching pairs!',
-                    style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                    style:
+                        const TextStyle(color: Colors.white70, fontSize: 13)),
               ),
-
               ..._bubbles.where((b) => !b.isPopped).map((b) {
                 return AnimatedBuilder(
                   animation: b.controller,
                   builder: (context, _) {
                     final yFraction = 1.0 - b.controller.value;
-                    final screenY = size.height * 0.15 + yFraction * size.height * 0.7;
+                    final screenY =
+                        size.height * 0.15 + yFraction * size.height * 0.7;
                     return Positioned(
                       left: b.x * size.width - 35,
                       top: screenY,
@@ -228,9 +235,11 @@ class _BubbleWidget extends StatelessWidget {
         children: [
           // Specular highlight
           Positioned(
-            left: 12, top: 10,
+            left: 12,
+            top: 10,
             child: Container(
-              width: 18, height: 10,
+              width: 18,
+              height: 10,
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(8),

@@ -28,13 +28,15 @@ class _HomeScreenState extends State<HomeScreen>
       duration: const Duration(seconds: 4),
     )..repeat(reverse: true);
 
-    _floaters = List.generate(6, (i) => _FloatingChar(
-      emoji: _characterEmojis[i % _characterEmojis.length],
-      x: 0.05 + _rng.nextDouble() * 0.9,
-      y: 0.1 + _rng.nextDouble() * 0.8,
-      offset: _rng.nextDouble() * 2 * pi,
-      amplitude: 8 + _rng.nextDouble() * 12,
-    ));
+    _floaters = List.generate(
+        6,
+        (i) => _FloatingChar(
+              emoji: _characterEmojis[i % _characterEmojis.length],
+              x: 0.05 + _rng.nextDouble() * 0.9,
+              y: 0.1 + _rng.nextDouble() * 0.8,
+              offset: _rng.nextDouble() * 2 * pi,
+              amplitude: 8 + _rng.nextDouble() * 12,
+            ));
   }
 
   @override
@@ -65,14 +67,15 @@ class _HomeScreenState extends State<HomeScreen>
                 animation: _floatController,
                 builder: (context, _) => Stack(
                   children: _floaters.map((f) {
-                    final dy = sin(_floatController.value * pi + f.offset) * f.amplitude;
+                    final dy = sin(_floatController.value * pi + f.offset) *
+                        f.amplitude;
                     return Positioned(
                       left: MediaQuery.of(context).size.width * f.x - 20,
                       top: MediaQuery.of(context).size.height * f.y + dy,
                       child: Opacity(
                         opacity: 0.6,
-                        child: Text(f.emoji,
-                            style: const TextStyle(fontSize: 36)),
+                        child:
+                            Text(f.emoji, style: const TextStyle(fontSize: 36)),
                       ),
                     );
                   }).toList(),
@@ -154,7 +157,8 @@ class _HomeScreenState extends State<HomeScreen>
                         color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.4), width: 1.5),
+                            color: Colors.white.withValues(alpha: 0.4),
+                            width: 1.5),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
@@ -188,7 +192,10 @@ class _FloatingChar {
   final String emoji;
   final double x, y, offset, amplitude;
   _FloatingChar({
-    required this.emoji, required this.x, required this.y,
-    required this.offset, required this.amplitude,
+    required this.emoji,
+    required this.x,
+    required this.y,
+    required this.offset,
+    required this.amplitude,
   });
 }

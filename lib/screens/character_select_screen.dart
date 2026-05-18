@@ -53,8 +53,8 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
 
   void _pickAccessory(AccessoryType acc) {
     setState(() => _character = _character.copyWith(
-      accessory: _character.accessory == acc ? AccessoryType.none : acc,
-    ));
+          accessory: _character.accessory == acc ? AccessoryType.none : acc,
+        ));
   }
 
   void _confirm(BuildContext context) {
@@ -100,7 +100,8 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: _character.outfitColor.withValues(alpha: 0.3),
-                      border: Border.all(color: _character.outfitColor, width: 4),
+                      border:
+                          Border.all(color: _character.outfitColor, width: 4),
                       boxShadow: [
                         BoxShadow(
                           color: _character.outfitColor.withValues(alpha: 0.5),
@@ -200,7 +201,11 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
                           width: 3,
                         ),
                         boxShadow: selected
-                            ? [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 8)]
+                            ? [
+                                BoxShadow(
+                                    color: color.withValues(alpha: 0.6),
+                                    blurRadius: 8)
+                              ]
                             : [],
                       ),
                     ),

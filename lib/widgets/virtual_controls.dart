@@ -33,9 +33,8 @@ class _VirtualControlsState extends State<VirtualControls> {
   void _onPanUpdate(DragUpdateDetails details, Offset baseCenter) {
     final localPos = details.localPosition - baseCenter;
     final dist = localPos.distance;
-    final clamped = dist > _baseRadius
-        ? localPos / dist * _baseRadius
-        : localPos;
+    final clamped =
+        dist > _baseRadius ? localPos / dist * _baseRadius : localPos;
     setState(() => _thumbOffset = clamped);
     final normalized = clamped / _baseRadius;
     widget.onMove(normalized);
@@ -199,6 +198,5 @@ class _JoystickPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_JoystickPainter old) =>
-      old.thumbOffset != thumbOffset;
+  bool shouldRepaint(_JoystickPainter old) => old.thumbOffset != thumbOffset;
 }

@@ -37,8 +37,10 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     context.read<GameState>().resetForWorld();
     _seed = DateTime.now().millisecondsSinceEpoch;
 
-    _glowControllers = List.generate(_stoneCount, (_) =>
-      AnimationController(vsync: this, duration: const Duration(milliseconds: 500)));
+    _glowControllers = List.generate(
+        _stoneCount,
+        (_) => AnimationController(
+            vsync: this, duration: const Duration(milliseconds: 500)));
 
     _sequence = List.generate(_stoneCount, (i) => i)..shuffle(Random());
 
@@ -47,7 +49,9 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
 
   @override
   void dispose() {
-    for (final c in _glowControllers) { c.dispose(); }
+    for (final c in _glowControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -60,14 +64,20 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
       final x = size.width * (0.10 + rng.nextDouble() * 0.80);
       final y = size.height * (0.20 + rng.nextDouble() * 0.60);
       final candidate = Offset(x, y);
-      final tooClose = _stonePositions.any((p) => (p - candidate).distance < 90);
-      if (!tooClose) { _stonePositions.add(candidate); }
+      final tooClose =
+          _stonePositions.any((p) => (p - candidate).distance < 90);
+      if (!tooClose) {
+        _stonePositions.add(candidate);
+      }
     }
   }
 
   Future<void> _showSequence() async {
     if (!mounted) return;
-    setState(() { _isShowingSequence = true; _playerCanTap = false; });
+    setState(() {
+      _isShowingSequence = true;
+      _playerCanTap = false;
+    });
 
     for (final idx in _sequence) {
       if (!mounted) return;
@@ -78,7 +88,10 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     }
 
     if (!mounted) return;
-    setState(() { _isShowingSequence = false; _playerCanTap = true; });
+    setState(() {
+      _isShowingSequence = false;
+      _playerCanTap = true;
+    });
   }
 
   void _onStoneTap(int stoneIndex) {
@@ -86,7 +99,9 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     final state = context.read<GameState>();
 
     _glowControllers[stoneIndex].forward(from: 0).then((_) {
-      if (mounted) { _glowControllers[stoneIndex].reverse(); }
+      if (mounted) {
+        _glowControllers[stoneIndex].reverse();
+      }
     });
 
     if (stoneIndex == _sequence[_playerStep]) {
@@ -107,7 +122,10 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
       }
     } else {
       state.loseLife();
-      setState(() { _playerStep = 0; _playerStoneIndex = -1; });
+      setState(() {
+        _playerStep = 0;
+        _playerStoneIndex = -1;
+      });
       if (state.lives <= 0) {
         Future.delayed(const Duration(milliseconds: 600), _onLose);
         return;
@@ -120,12 +138,14 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     context.read<GameState>().completeWorld(WorldId.stones);
     context.read<GameState>().addCoins(5);
     Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(didWin: true, coinsEarned: 5, worldName: 'Stepping Stones'));
+        arguments: const VictoryArgs(
+            didWin: true, coinsEarned: 5, worldName: 'Stepping Stones'));
   }
 
   void _onLose() {
     Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(didWin: false, worldName: 'Stepping Stones'));
+        arguments:
+            const VictoryArgs(didWin: false, worldName: 'Stepping Stones'));
   }
 
   @override
@@ -140,12 +160,17 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
         child: SafeArea(
           child: Stack(
             children: [
-              Positioned(top: 12, left: 16, child: LivesHud(lives: state.lives)),
               Positioned(
-                top: 56, left: 0, right: 0,
+                  top: 12, left: 16, child: LivesHud(lives: state.lives)),
+              Positioned(
+                top: 56,
+                left: 0,
+                right: 0,
                 child: Center(
                   child: Text(
-                    _isShowingSequence ? 'Remember the path...' : 'Hop the right stones!',
+                    _isShowingSequence
+                        ? 'Remember the path...'
+                        : 'Hop the right stones!',
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -154,20 +179,21 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
                   ),
                 ),
               ),
-
               Positioned(
-                left: 8, top: size.height * 0.3,
+                left: 8,
+                top: size.height * 0.3,
                 child: const Text('🏖️', style: TextStyle(fontSize: 32)),
               ),
               Positioned(
-                right: 8, top: size.height * 0.3,
+                right: 8,
+                top: size.height * 0.3,
                 child: const Text('🏆', style: TextStyle(fontSize: 32)),
               ),
-
               ..._stonePositions.asMap().entries.map((e) {
                 final i = e.key;
                 final pos = e.value;
-                final isNext = _playerCanTap && _playerStep < _stoneCount &&
+                final isNext = _playerCanTap &&
+                    _playerStep < _stoneCount &&
                     i == _sequence[_playerStep];
                 return Positioned(
                   left: pos.dx - 35,
@@ -186,20 +212,27 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
                             borderRadius: BorderRadius.circular(20),
                             color: Color.lerp(
                               const Color(0xFF78909C),
-                              isNext ? Colors.greenAccent : const Color(0xFFFFD54F),
+                              isNext
+                                  ? Colors.greenAccent
+                                  : const Color(0xFFFFD54F),
                               glow,
                             ),
                             boxShadow: glow > 0.1
-                                ? [BoxShadow(
-                                    color: (isNext ? Colors.green : Colors.amber)
-                                        .withValues(alpha: glow * 0.7),
-                                    blurRadius: 16 * glow,
-                                  )]
-                                : [const BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 3),
-                                  )],
+                                ? [
+                                    BoxShadow(
+                                      color:
+                                          (isNext ? Colors.green : Colors.amber)
+                                              .withValues(alpha: glow * 0.7),
+                                      blurRadius: 16 * glow,
+                                    )
+                                  ]
+                                : [
+                                    const BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 3),
+                                    )
+                                  ],
                           ),
                         );
                       },
@@ -207,7 +240,6 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
                   ),
                 );
               }),
-
               if (_playerStoneIndex >= 0)
                 Positioned(
                   left: _stonePositions[_playerStoneIndex].dx - 20,

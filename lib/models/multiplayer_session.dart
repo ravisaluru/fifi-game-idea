@@ -3,7 +3,9 @@ import 'character.dart';
 import 'game_state.dart';
 
 enum AiDifficulty { easy, medium, hard }
+
 enum SessionType { localAi, online }
+
 enum PlayerStatus { waiting, ready, playing, finished }
 
 class SessionPlayer {
@@ -45,12 +47,12 @@ class SessionPlayer {
   }
 
   Map<String, dynamic> toMap() => {
-    'name': name,
-    'isAi': isAi,
-    'score': score,
-    'progress': progress,
-    'status': status.name,
-  };
+        'name': name,
+        'isAi': isAi,
+        'score': score,
+        'progress': progress,
+        'status': status.name,
+      };
 }
 
 class MultiplayerSession {
@@ -67,14 +69,14 @@ class MultiplayerSession {
     this.worldId,
   });
 
-  SessionPlayer? get localPlayer =>
-      players.where((p) => p.isLocal).firstOrNull;
+  SessionPlayer? get localPlayer => players.where((p) => p.isLocal).firstOrNull;
 
   List<SessionPlayer> get sortedByScore =>
       [...players]..sort((a, b) => b.score.compareTo(a.score));
 
   void updateScore(String playerId, int score, {double? progress}) {
-    final p = players.firstWhere((p) => p.id == playerId, orElse: () => players.first);
+    final p = players.firstWhere((p) => p.id == playerId,
+        orElse: () => players.first);
     p.score = score;
     if (progress != null) p.progress = progress;
   }
@@ -91,15 +93,15 @@ class AiSimulator {
   /// Returns a per-second score increment for treasure hunt / scoring worlds.
   int scoreTickForWorld(WorldId world) {
     final base = switch (difficulty) {
-      AiDifficulty.easy   => 0,
+      AiDifficulty.easy => 0,
       AiDifficulty.medium => 1,
-      AiDifficulty.hard   => 2,
+      AiDifficulty.hard => 2,
     };
     // Add some randomness so AI doesn't feel robotic
     final noise = switch (difficulty) {
-      AiDifficulty.easy   => _rng.nextDouble() < 0.2 ? 1 : 0,
+      AiDifficulty.easy => _rng.nextDouble() < 0.2 ? 1 : 0,
       AiDifficulty.medium => _rng.nextDouble() < 0.4 ? 1 : 0,
-      AiDifficulty.hard   => _rng.nextDouble() < 0.6 ? 1 : 0,
+      AiDifficulty.hard => _rng.nextDouble() < 0.6 ? 1 : 0,
     };
     return base + noise;
   }
@@ -107,9 +109,9 @@ class AiSimulator {
   /// Returns a per-second progress increment for race worlds (0–1 scale).
   double progressTickForWorld(WorldId world) {
     final base = switch (difficulty) {
-      AiDifficulty.easy   => 0.005,
+      AiDifficulty.easy => 0.005,
       AiDifficulty.medium => 0.012,
-      AiDifficulty.hard   => 0.020,
+      AiDifficulty.hard => 0.020,
     };
     final jitter = (_rng.nextDouble() - 0.5) * 0.005;
     return (base + jitter).clamp(0.0, 0.04);
@@ -117,20 +119,20 @@ class AiSimulator {
 
   /// Chance (0–1) that AI makes a mistake this second.
   double mistakeChance() => switch (difficulty) {
-    AiDifficulty.easy   => 0.35,
-    AiDifficulty.medium => 0.15,
-    AiDifficulty.hard   => 0.04,
-  };
+        AiDifficulty.easy => 0.35,
+        AiDifficulty.medium => 0.15,
+        AiDifficulty.hard => 0.04,
+      };
 }
 
 const Map<AiDifficulty, String> difficultyLabels = {
-  AiDifficulty.easy:   'Easy 🌱',
+  AiDifficulty.easy: 'Easy 🌱',
   AiDifficulty.medium: 'Medium ⚡',
-  AiDifficulty.hard:   'Hard 🔥',
+  AiDifficulty.hard: 'Hard 🔥',
 };
 
 const List<Map<String, String>> aiPersonalities = [
-  {'name': 'Robo',  'emoji': '🤖'},
+  {'name': 'Robo', 'emoji': '🤖'},
   {'name': 'Ghost', 'emoji': '👻'},
-  {'name': 'Dino',  'emoji': '🦕'},
+  {'name': 'Dino', 'emoji': '🦕'},
 ];

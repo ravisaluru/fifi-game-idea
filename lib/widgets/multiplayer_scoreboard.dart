@@ -93,8 +93,8 @@ class _MultiplayerScoreboardState extends State<MultiplayerScoreboard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Scores', style: TextStyle(
-                color: Colors.white54, fontSize: 11)),
+            const Text('Scores',
+                style: TextStyle(color: Colors.white54, fontSize: 11)),
             const SizedBox(height: 4),
             ...sorted.asMap().entries.map((e) {
               final rank = e.key;
@@ -107,7 +107,11 @@ class _MultiplayerScoreboardState extends State<MultiplayerScoreboard> {
                   children: [
                     Text(
                       p.isAi
-                          ? (p.name == 'Robo' ? '🤖' : p.name == 'Ghost' ? '👻' : '🦕')
+                          ? (p.name == 'Robo'
+                              ? '🤖'
+                              : p.name == 'Ghost'
+                                  ? '👻'
+                                  : '🦕')
                           : (p.character?.emoji ?? '🧒'),
                       style: const TextStyle(fontSize: 18),
                     ),
@@ -117,7 +121,8 @@ class _MultiplayerScoreboardState extends State<MultiplayerScoreboard> {
                       style: TextStyle(
                         color: isLeading ? Colors.yellow : Colors.white,
                         fontSize: 14,
-                        fontWeight: isLeading ? FontWeight.bold : FontWeight.normal,
+                        fontWeight:
+                            isLeading ? FontWeight.bold : FontWeight.normal,
                       ),
                     ),
                     if (p.progress > 0) ...[

@@ -75,8 +75,11 @@ class _ModeCard extends StatefulWidget {
   final VoidCallback onTap;
 
   const _ModeCard({
-    required this.emoji, required this.title, required this.subtitle,
-    required this.color, required this.onTap,
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.onTap,
   });
 
   @override
@@ -90,7 +93,10 @@ class _ModeCardState extends State<_ModeCard> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) { setState(() => _pressed = false); widget.onTap(); },
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.onTap();
+      },
       onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedScale(
         scale: _pressed ? 0.95 : 1.0,
@@ -123,8 +129,8 @@ class _ModeCardState extends State<_ModeCard> {
                         fontWeight: FontWeight.bold,
                       )),
                   Text(widget.subtitle,
-                      style: const TextStyle(
-                          color: Colors.white70, fontSize: 13)),
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 13)),
                 ],
               ),
             ],

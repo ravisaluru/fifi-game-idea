@@ -18,9 +18,13 @@ class _FallingStar {
   bool caught = false;
 
   _FallingStar({
-    required this.id, required this.x, required this.y,
-    required this.dx, required this.dy,
-    required this.rotation, required this.rotationSpeed,
+    required this.id,
+    required this.x,
+    required this.y,
+    required this.dx,
+    required this.dy,
+    required this.rotation,
+    required this.rotationSpeed,
   });
 }
 
@@ -115,7 +119,9 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
         }
       }
     }
-    for (final s in toRemove) { _stars.remove(s); }
+    for (final s in toRemove) {
+      _stars.remove(s);
+    }
     if (changed) setState(() {});
   }
 
@@ -146,7 +152,8 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
     context.read<GameState>().completeWorld(WorldId.star);
     context.read<GameState>().addCoins(5);
     Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(didWin: true, coinsEarned: 5, worldName: 'Star Shower'));
+        arguments: const VictoryArgs(
+            didWin: true, coinsEarned: 5, worldName: 'Star Shower'));
   }
 
   void _onLose() {
@@ -166,9 +173,11 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
         child: SafeArea(
           child: Stack(
             children: [
-              Positioned(top: 12, left: 16, child: LivesHud(lives: state.lives)),
               Positioned(
-                top: 12, right: 16,
+                  top: 12, left: 16, child: LivesHud(lives: state.lives)),
+              Positioned(
+                top: 12,
+                right: 16,
                 child: Text(
                   '⭐ $_caught / $_target',
                   style: const TextStyle(
@@ -190,17 +199,23 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
               AnimatedBuilder(
                 animation: _ticker,
                 builder: (context, _) => Stack(
-                  children: _stars.map((star) => Positioned(
-                    left: star.x * size.width - 30,
-                    top: star.y * size.height,
-                    child: GestureDetector(
-                      onTap: () => _onStarTap(star, Offset(star.x * size.width, star.y * size.height)),
-                      child: Transform.rotate(
-                        angle: star.rotation,
-                        child: const Text('⭐', style: TextStyle(fontSize: 44)),
-                      ),
-                    ),
-                  )).toList(),
+                  children: _stars
+                      .map((star) => Positioned(
+                            left: star.x * size.width - 30,
+                            top: star.y * size.height,
+                            child: GestureDetector(
+                              onTap: () => _onStarTap(
+                                  star,
+                                  Offset(star.x * size.width,
+                                      star.y * size.height)),
+                              child: Transform.rotate(
+                                angle: star.rotation,
+                                child: const Text('⭐',
+                                    style: TextStyle(fontSize: 44)),
+                              ),
+                            ),
+                          ))
+                      .toList(),
                 ),
               ),
 

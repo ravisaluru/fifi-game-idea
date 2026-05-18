@@ -55,7 +55,8 @@ class GameState extends ChangeNotifier {
   }
 
   WorldId pickNextWorld() {
-    final pool = WorldId.values.where((w) => w != lastWorld).toList()..shuffle(Random());
+    final pool = WorldId.values.where((w) => w != lastWorld).toList()
+      ..shuffle(Random());
     lastWorld = pool.first;
     return pool.first;
   }

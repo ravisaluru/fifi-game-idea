@@ -23,8 +23,7 @@ class MultiplayerService {
     );
   }
 
-  DatabaseReference roomRef(String code) =>
-      _db.ref('rooms/$code');
+  DatabaseReference roomRef(String code) => _db.ref('rooms/$code');
 
   // ── Create a new room ─────────────────────────────────────────────────────
 
@@ -114,8 +113,12 @@ MultiplayerSession sessionFromSnapshot(
         e.value as Map<dynamic, dynamic>, e.key as String);
     if (p.id == localPlayerId) {
       return SessionPlayer(
-        id: p.id, name: p.name, isLocal: true,
-        score: p.score, progress: p.progress, status: p.status,
+        id: p.id,
+        name: p.name,
+        isLocal: true,
+        score: p.score,
+        progress: p.progress,
+        status: p.status,
       );
     }
     return p;
@@ -123,7 +126,8 @@ MultiplayerSession sessionFromSnapshot(
 
   final worldName = data['worldId'] as String? ?? 'tiger';
   final worldId = WorldId.values.firstWhere(
-    (w) => w.name == worldName, orElse: () => WorldId.tiger,
+    (w) => w.name == worldName,
+    orElse: () => WorldId.tiger,
   );
 
   return MultiplayerSession(

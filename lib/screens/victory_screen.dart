@@ -44,7 +44,8 @@ class _VictoryScreenState extends State<VictoryScreen>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
-    _scaleAnim = CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut);
+    _scaleAnim =
+        CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)!.settings.arguments as VictoryArgs?;
@@ -73,8 +74,14 @@ class _VictoryScreenState extends State<VictoryScreen>
   }
 
   static const _confettiColors = [
-    Colors.red, Colors.orange, Colors.yellow, Colors.green,
-    Colors.blue, Colors.purple, Colors.pink, Colors.teal,
+    Colors.red,
+    Colors.orange,
+    Colors.yellow,
+    Colors.green,
+    Colors.blue,
+    Colors.purple,
+    Colors.pink,
+    Colors.teal,
   ];
 
   @override
@@ -124,20 +131,29 @@ class _VictoryScreenState extends State<VictoryScreen>
                 child: IgnorePointer(
                   child: Stack(
                     children: [
-                      Colors.yellow, Colors.orange, Colors.pink, Colors.cyan,
-                    ].asMap().entries.map((e) => Positioned(
-                      left: MediaQuery.of(context).size.width * (0.15 + e.key * 0.22),
-                      top: MediaQuery.of(context).size.height * 0.35,
-                      child: SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: ParticleBurst(
-                          key: ValueKey('victory_${_burstCount}_${e.key}'),
-                          color: e.value,
-                          particleCount: 10,
-                        ),
-                      ),
-                    )).toList(),
+                      Colors.yellow,
+                      Colors.orange,
+                      Colors.pink,
+                      Colors.cyan,
+                    ]
+                        .asMap()
+                        .entries
+                        .map((e) => Positioned(
+                              left: MediaQuery.of(context).size.width *
+                                  (0.15 + e.key * 0.22),
+                              top: MediaQuery.of(context).size.height * 0.35,
+                              child: SizedBox(
+                                width: 80,
+                                height: 80,
+                                child: ParticleBurst(
+                                  key: ValueKey(
+                                      'victory_${_burstCount}_${e.key}'),
+                                  color: e.value,
+                                  particleCount: 10,
+                                ),
+                              ),
+                            ))
+                        .toList(),
                   ),
                 ),
               ),
@@ -149,7 +165,8 @@ class _VictoryScreenState extends State<VictoryScreen>
                 children: [
                   ScaleTransition(
                     scale: _scaleAnim,
-                    child: BouncingEmoji(emoji: didWin ? '🏆' : '💪', fontSize: 96),
+                    child: BouncingEmoji(
+                        emoji: didWin ? '🏆' : '💪', fontSize: 96),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -158,14 +175,17 @@ class _VictoryScreenState extends State<VictoryScreen>
                       color: Colors.white,
                       fontSize: 42,
                       fontWeight: FontWeight.bold,
-                      shadows: const [Shadow(blurRadius: 12, color: Colors.black38)],
+                      shadows: const [
+                        Shadow(blurRadius: 12, color: Colors.black38)
+                      ],
                     ),
                   ),
                   if (didWin && (args?.coinsEarned ?? 0) > 0) ...[
                     const SizedBox(height: 8),
                     Text(
                       '+${args!.coinsEarned} coins! 🪙',
-                      style: const TextStyle(color: Colors.yellow, fontSize: 24),
+                      style:
+                          const TextStyle(color: Colors.yellow, fontSize: 24),
                     ),
                   ],
                   const SizedBox(height: 48),
@@ -188,7 +208,8 @@ class _VictoryScreenState extends State<VictoryScreen>
                     label: 'Home 🏠',
                     color: Colors.white.withValues(alpha: 0.2),
                     textColor: Colors.white,
-                    onTap: () => Navigator.popUntil(context, ModalRoute.withName('/')),
+                    onTap: () =>
+                        Navigator.popUntil(context, ModalRoute.withName('/')),
                   ),
                 ],
               ),
@@ -234,9 +255,7 @@ class _BigButton extends StatelessWidget {
         child: Center(
           child: Text(label,
               style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: textColor)),
+                  fontSize: 20, fontWeight: FontWeight.bold, color: textColor)),
         ),
       ),
     );
@@ -247,9 +266,14 @@ class _ConfettiParticle {
   double x, y, dx, dy, rotation, rotationSpeed, size;
   Color color;
   _ConfettiParticle({
-    required this.x, required this.y, required this.dx, required this.dy,
-    required this.color, required this.size,
-    required this.rotation, required this.rotationSpeed,
+    required this.x,
+    required this.y,
+    required this.dx,
+    required this.dy,
+    required this.color,
+    required this.size,
+    required this.rotation,
+    required this.rotationSpeed,
   });
 }
 
@@ -266,7 +290,8 @@ class _ConfettiPainter extends CustomPainter {
       canvas.translate(p.x * size.width, p.y * size.height);
       canvas.rotate(p.rotation);
       canvas.drawRect(
-        Rect.fromCenter(center: Offset.zero, width: p.size, height: p.size * 0.5),
+        Rect.fromCenter(
+            center: Offset.zero, width: p.size, height: p.size * 0.5),
         paint,
       );
       canvas.restore();

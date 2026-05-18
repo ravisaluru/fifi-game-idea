@@ -99,8 +99,9 @@ class _AiSetupScreenState extends State<AiSetupScreen> {
                               List.generate(n, (_) => '🤖').join(),
                               style: TextStyle(fontSize: n == 1 ? 28 : 18),
                             ),
-                            Text('$n', style: const TextStyle(
-                                color: Colors.white, fontSize: 14)),
+                            Text('$n',
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 14)),
                           ],
                         ),
                       ),
@@ -142,9 +143,8 @@ class _AiSetupScreenState extends State<AiSetupScreen> {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
-                            fontWeight: selected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                            fontWeight:
+                                selected ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
                       ),
