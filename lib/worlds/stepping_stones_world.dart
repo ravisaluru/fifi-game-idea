@@ -16,26 +16,27 @@ class SteppingStonesScreen extends StatefulWidget {
 
 class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     with TickerProviderStateMixin {
-  static const int _stoneCount = 6;
+  static const int _stoneCount = 12;
 
   late List<Offset> _stonePositions;
   late List<int> _sequence;
   late List<AnimationController> _glowControllers;
   int _playerStep = 0;
-  int _playerStoneIndex = -1; // which stone Fifi is on
+  int _playerStoneIndex = -1;
   bool _isShowingSequence = false;
   bool _playerCanTap = false;
+  late int _seed;
 
   @override
   void initState() {
     super.initState();
     context.read<GameState>().resetForWorld();
+    _seed = DateTime.now().millisecondsSinceEpoch;
 
     _glowControllers = List.generate(_stoneCount, (_) =>
       AnimationController(vsync: this, duration: const Duration(milliseconds: 500)));
 
-    _sequence = List.generate(_stoneCount, (i) => i); // in order
-    _sequence.shuffle(Random());
+    _sequence = List.generate(_stoneCount, (i) => i)..shuffle(Random());
 
     Future.delayed(const Duration(milliseconds: 600), _showSequence);
   }
@@ -47,12 +48,16 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
   }
 
   void _buildPositions(Size size) {
-    final rng = Random(42);
+    final rng = Random(_seed);
     _stonePositions = [];
-    for (int i = 0; i < _stoneCount; i++) {
-      final x = size.width * (0.12 + i * 0.14 + rng.nextDouble() * 0.04);
-      final y = size.height * (0.38 + (i % 2 == 0 ? -0.06 : 0.06) + rng.nextDouble() * 0.04);
-      _stonePositions.add(Offset(x, y));
+    int attempts = 0;
+    while (_stonePositions.length < _stoneCount && attempts < 1000) {
+      attempts++;
+      final x = size.width * (0.10 + rng.nextDouble() * 0.80);
+      final y = size.height * (0.20 + rng.nextDouble() * 0.60);
+      final candidate = Offset(x, y);
+      final tooClose = _stonePositions.any((p) => (p - candidate).distance < 90);
+      if (!tooClose) { _stonePositions.add(candidate); }
     }
   }
 
@@ -77,7 +82,7 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     final state = context.read<GameState>();
 
     _glowControllers[stoneIndex].forward(from: 0).then((_) {
-      if (mounted) _glowControllers[stoneIndex].reverse();
+      if (mounted) { _glowControllers[stoneIndex].reverse(); }
     });
 
     if (stoneIndex == _sequence[_playerStep]) {
@@ -89,7 +94,6 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
         Future.delayed(const Duration(milliseconds: 500), _onWin);
       }
     } else {
-      // Wrong stone
       state.loseLife();
       setState(() { _playerStep = 0; _playerStoneIndex = -1; });
       if (state.lives <= 0) {
@@ -139,18 +143,15 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
                 ),
               ),
 
-              // Start bank label
               Positioned(
                 left: 8, top: size.height * 0.3,
                 child: const Text('🏖️', style: TextStyle(fontSize: 32)),
               ),
-              // Goal bank label
               Positioned(
                 right: 8, top: size.height * 0.3,
                 child: const Text('🏆', style: TextStyle(fontSize: 32)),
               ),
 
-              // Stones
               ..._stonePositions.asMap().entries.map((e) {
                 final i = e.key;
                 final pos = e.value;
@@ -195,7 +196,6 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
                 );
               }),
 
-              // Player (Fifi) on stone
               if (_playerStoneIndex >= 0)
                 Positioned(
                   left: _stonePositions[_playerStoneIndex].dx - 20,
