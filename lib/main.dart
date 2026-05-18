@@ -10,6 +10,7 @@ import 'screens/victory_screen.dart';
 import 'screens/multiplayer_menu_screen.dart';
 import 'screens/ai_setup_screen.dart';
 import 'screens/lobby_screen.dart';
+import 'screens/world_select_screen.dart';
 import 'worlds/tiger_world.dart';
 import 'worlds/firefly_world.dart';
 import 'worlds/bubble_world.dart';
@@ -74,6 +75,7 @@ class FifiApp extends StatelessWidget {
           '/multiplayer':   (_) => const MultiplayerMenuScreen(),
           '/ai-setup':      (_) => const AiSetupScreen(),
           '/lobby':         (_) => LobbyScreen(firebaseAvailable: firebaseAvailable),
+          '/world-select':  (_) => const WorldSelectScreen(),
           '/world/tiger':   (_) => const TigerWorldScreen(),
           '/world/firefly': (_) => const FireflyWorldScreen(),
           '/world/bubble':  (_) => const BubbleWorldScreen(),
