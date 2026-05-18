@@ -59,7 +59,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         color: pairs[i],
         x: 0.08 + rng.nextDouble() * 0.82,
       );
-      final duration = Duration(milliseconds: 4000 + rng.nextInt(3000));
+      final duration = Duration(milliseconds: 6700 + rng.nextInt(5000));
       final delay = rng.nextInt(2000);
       b.controller = AnimationController(vsync: this, duration: duration);
       Future.delayed(Duration(milliseconds: delay), () {
