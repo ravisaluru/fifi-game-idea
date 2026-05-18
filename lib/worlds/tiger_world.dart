@@ -25,25 +25,25 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
       _tigerState == _TigerState.lookingAtYou ||
       _tigerState == _TigerState.turningAround;
 
-  double _playerProgress = 0.0; // 0.0 (start) to 1.0 (goal)
+  double _playerProgress = 0.0;
   static const double _stepSize = 0.08;
 
   Timer? _stateTimer;
   bool _wasCaught = false;
   final Random _rng = Random();
 
-  late AnimationController _tigerBlinkController;
   late AnimationController _shakeController;
   late Animation<double> _shakeAnim;
+  late AnimationController _tigerScaleController;
+  late Animation<double> _tigerScaleAnim;
+  late AnimationController _bobController;
+  late AnimationController _flashController;
+  late Animation<double> _flashAnim;
 
   @override
   void initState() {
     super.initState();
     context.read<GameState>().resetForWorld();
-
-    _tigerBlinkController = AnimationController(
-      vsync: this, duration: const Duration(milliseconds: 600),
-    )..repeat(reverse: true);
 
     _shakeController = AnimationController(
       vsync: this, duration: const Duration(milliseconds: 400),
@@ -55,14 +55,34 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
       TweenSequenceItem(tween: Tween(begin: -8.0, end: 0.0), weight: 1),
     ]).animate(_shakeController);
 
+    _tigerScaleController = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 400),
+    );
+    _tigerScaleAnim = Tween<double>(begin: 64, end: 70).animate(
+      CurvedAnimation(parent: _tigerScaleController, curve: Curves.easeInOut),
+    );
+
+    _bobController = AnimationController(
+      vsync: this, duration: const Duration(milliseconds: 600),
+    );
+
+    _flashController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1.0,
+    );
+    _flashAnim = Tween<double>(begin: 0.3, end: 0).animate(_flashController);
+
     _scheduleNextStateChange();
   }
 
   @override
   void dispose() {
     _stateTimer?.cancel();
-    _tigerBlinkController.dispose();
     _shakeController.dispose();
+    _tigerScaleController.dispose();
+    _bobController.dispose();
+    _flashController.dispose();
     super.dispose();
   }
 
@@ -87,29 +107,42 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
         _TigerState.turningAway   => _TigerState.lookingAway,
       };
     });
+    if (_tigerState == _TigerState.turningAround) {
+      _tigerScaleController.forward(from: 0);
+    } else if (_tigerState == _TigerState.turningAway) {
+      _tigerScaleController.reverse();
+    }
     _scheduleNextStateChange();
   }
 
   void _onMoveInput() {
     if (_isWatching || _wasCaught) return;
     setState(() => _playerProgress = (_playerProgress + _stepSize).clamp(0, 1));
-    if (_playerProgress >= 1.0) _onWin();
+    _bobController.forward(from: 0);
+    if (_playerProgress >= 1.0) { _onWin(); }
   }
 
   void _onTap() {
-    if (_isWatching && !_wasCaught) { _onCaught(); }
-    else if (!_isWatching) { _onMoveInput(); }
+    if (_isWatching && !_wasCaught) {
+      _onCaught();
+    } else if (!_isWatching) {
+      _onMoveInput();
+    }
   }
 
   void _onCaught() async {
-    if (_wasCaught) { return; }
+    if (_wasCaught) return;
     _wasCaught = true;
+
+    _flashController.value = 0.0;
+    await _flashController.forward();
+
     await _shakeController.forward(from: 0);
     _shakeController.reset();
 
-    // ignore: use_build_context_synchronously
-    final state = context.read<GameState>();
+    final state = context.read<GameState>(); // ignore: use_build_context_synchronously
     state.loseLife();
+    if (!mounted) return;
     setState(() {
       _playerProgress = max(0, _playerProgress - _stepSize * 2);
       _wasCaught = false;
@@ -139,9 +172,9 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
 
     final tigerEmoji = switch (_tigerState) {
       _TigerState.lookingAway    => '🐯',
-      _TigerState.turningAround  => '🔄',
-      _TigerState.lookingAtYou   => '👁️',
-      _TigerState.turningAway    => '🔄',
+      _TigerState.turningAround  => '😤',
+      _TigerState.lookingAtYou   => '😤',
+      _TigerState.turningAway    => '😌',
     };
 
     return Scaffold(
@@ -152,10 +185,8 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
           child: SafeArea(
             child: Stack(
               children: [
-                // HUD
                 Positioned(top: 12, left: 16, child: LivesHud(lives: state.lives)),
 
-                // Tiger state label
                 Positioned(
                   top: 56, left: 0, right: 0,
                   child: Center(
@@ -175,22 +206,29 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                   ),
                 ),
 
-                // Tiger
                 Positioned(
                   right: 32,
                   top: size.height * 0.28,
                   child: AnimatedBuilder(
-                    animation: _tigerBlinkController,
-                    builder: (context, _) => Text(
-                      tigerEmoji,
-                      style: TextStyle(
-                        fontSize: 64 + _tigerBlinkController.value * 4,
-                      ),
-                    ),
+                    animation: _tigerScaleAnim,
+                    builder: (context, _) {
+                      final fontSize = _tigerScaleAnim.value;
+                      final showGlow = _tigerState == _TigerState.lookingAtYou;
+                      return Container(
+                        decoration: showGlow ? BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [BoxShadow(
+                            color: Colors.red.withValues(alpha: 0.7),
+                            blurRadius: 20,
+                            spreadRadius: 6,
+                          )],
+                        ) : null,
+                        child: Text(tigerEmoji, style: TextStyle(fontSize: fontSize)),
+                      );
+                    },
                   ),
                 ),
 
-                // Goal line
                 Positioned(
                   right: 24, top: size.height * 0.24,
                   child: Container(
@@ -199,14 +237,14 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                   ),
                 ),
 
-                // Player
                 AnimatedBuilder(
-                  animation: _shakeAnim,
+                  animation: Listenable.merge([_shakeAnim, _bobController]),
                   builder: (context, _) {
                     final playerX = 40 + _playerProgress * (size.width - 130);
+                    final bob = sin(_bobController.value * 8) * 6;
                     return Positioned(
                       left: playerX + _shakeAnim.value - 24,
-                      top: size.height * 0.30,
+                      top: size.height * 0.30 + bob,
                       child: Text(
                         _wasCaught ? '😱' : '🏃',
                         style: const TextStyle(fontSize: 48),
@@ -215,7 +253,6 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                   },
                 ),
 
-                // Progress bar
                 Positioned(
                   bottom: 120, left: 16, right: 16,
                   child: Column(
@@ -237,21 +274,18 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                   ),
                 ),
 
-                // Multiplayer scoreboard
                 if (state.isMultiplayer)
                   MultiplayerScoreboard(
                     session: state.multiplayerSession!,
                     worldId: WorldId.tiger,
                   ),
 
-                // Virtual controls
                 VirtualControls(
-                  onMove: (dir) { if (dir.dx > 0.3) _onMoveInput(); },
+                  onMove: (dir) { if (dir.dx > 0.3) { _onMoveInput(); } },
                   onRelease: () {},
                   showJump: false,
                 ),
 
-                // Hint
                 Positioned(
                   bottom: 160, left: 0, right: 0,
                   child: Center(
@@ -260,6 +294,19 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                       style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                     ),
                   ),
+                ),
+
+                AnimatedBuilder(
+                  animation: _flashAnim,
+                  builder: (context, _) => _flashAnim.value > 0
+                      ? Positioned.fill(
+                          child: IgnorePointer(
+                            child: Container(
+                              color: Colors.red.withValues(alpha: _flashAnim.value),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.shrink(),
                 ),
               ],
             ),
