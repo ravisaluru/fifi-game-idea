@@ -11,6 +11,7 @@ class GameState extends ChangeNotifier {
   int lives = 3;
   int totalCoins = 0;
   int worldsCompleted = 0;
+  final Set<WorldId> completedWorlds = {};
   WorldId? lastWorld;
   Character? selectedCharacter;
   MultiplayerSession? multiplayerSession;
@@ -32,8 +33,9 @@ class GameState extends ChangeNotifier {
     notifyListeners();
   }
 
-  void completeWorld() {
-    worldsCompleted++;
+  void completeWorld(WorldId id) {
+    completedWorlds.add(id);
+    worldsCompleted = completedWorlds.length;
     notifyListeners();
   }
 

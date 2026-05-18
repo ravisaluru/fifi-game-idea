@@ -44,9 +44,22 @@ void main() {
     });
 
     test('completeWorld increments counter', () {
-      state.completeWorld();
-      state.completeWorld();
+      state.completeWorld(WorldId.tiger);
+      state.completeWorld(WorldId.bubble);
       expect(state.worldsCompleted, 2);
+    });
+
+    test('completeWorld tracks completed worlds set', () {
+      state.completeWorld(WorldId.tiger);
+      expect(state.completedWorlds, contains(WorldId.tiger));
+      expect(state.completedWorlds, hasLength(1));
+    });
+
+    test('completeWorld does not double-count same world', () {
+      state.completeWorld(WorldId.tiger);
+      state.completeWorld(WorldId.tiger);
+      expect(state.worldsCompleted, 1);
+      expect(state.completedWorlds, hasLength(1));
     });
   });
 }
