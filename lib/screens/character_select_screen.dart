@@ -99,11 +99,11 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
                     height: 120,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: _character.outfitColor.withOpacity(0.3),
+                      color: _character.outfitColor.withValues(alpha: 0.3),
                       border: Border.all(color: _character.outfitColor, width: 4),
                       boxShadow: [
                         BoxShadow(
-                          color: _character.outfitColor.withOpacity(0.5),
+                          color: _character.outfitColor.withValues(alpha: 0.5),
                           blurRadius: 20,
                           spreadRadius: 4,
                         ),
@@ -156,12 +156,12 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: selected
-                              ? Colors.white.withOpacity(0.3)
-                              : Colors.white.withOpacity(0.1),
+                              ? Colors.white.withValues(alpha: 0.3)
+                              : Colors.white.withValues(alpha: 0.1),
                           border: Border.all(
                             color: selected
                                 ? Colors.white
-                                : Colors.white.withOpacity(0.3),
+                                : Colors.white.withValues(alpha: 0.3),
                             width: selected ? 3 : 1.5,
                           ),
                         ),
@@ -200,7 +200,7 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
                           width: 3,
                         ),
                         boxShadow: selected
-                            ? [BoxShadow(color: color.withOpacity(0.6), blurRadius: 8)]
+                            ? [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 8)]
                             : [],
                       ),
                     ),
@@ -228,8 +228,8 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
                         color: selected
-                            ? Colors.white.withOpacity(0.3)
-                            : Colors.white.withOpacity(0.1),
+                            ? Colors.white.withValues(alpha: 0.3)
+                            : Colors.white.withValues(alpha: 0.1),
                         border: Border.all(
                           color: selected ? Colors.white : Colors.transparent,
                           width: 2,
@@ -261,7 +261,7 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.orange.withOpacity(0.5),
+                          color: Colors.orange.withValues(alpha: 0.5),
                           blurRadius: 16,
                           offset: const Offset(0, 6),
                         ),

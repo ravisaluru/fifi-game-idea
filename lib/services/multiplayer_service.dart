@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:firebase_database/firebase_database.dart';
-import '../models/multiplayer_session.dart';
 import '../models/game_state.dart';
 
 // NOTE: Firebase requires google-services.json (Android) and

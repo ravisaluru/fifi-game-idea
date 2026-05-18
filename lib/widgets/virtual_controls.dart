@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 
 class VirtualControls extends StatefulWidget {
@@ -142,11 +141,11 @@ class _ActionButton extends StatelessWidget {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.85),
+            color: color.withValues(alpha: 0.85),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.4),
+                color: color.withValues(alpha: 0.4),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -180,13 +179,13 @@ class _JoystickPainter extends CustomPainter {
     canvas.drawCircle(
       center,
       baseRadius,
-      Paint()..color = Colors.white.withOpacity(0.25),
+      Paint()..color = Colors.white.withValues(alpha: 0.25),
     );
     canvas.drawCircle(
       center,
       baseRadius,
       Paint()
-        ..color = Colors.white.withOpacity(0.5)
+        ..color = Colors.white.withValues(alpha: 0.5)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2,
     );
@@ -195,7 +194,7 @@ class _JoystickPainter extends CustomPainter {
     canvas.drawCircle(
       center + thumbOffset,
       thumbRadius,
-      Paint()..color = Colors.white.withOpacity(0.75),
+      Paint()..color = Colors.white.withValues(alpha: 0.75),
     );
   }
 

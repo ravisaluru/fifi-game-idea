@@ -179,7 +179,7 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
                             boxShadow: glow > 0.1
                                 ? [BoxShadow(
                                     color: (isNext ? Colors.green : Colors.amber)
-                                        .withOpacity(glow * 0.7),
+                                        .withValues(alpha: glow * 0.7),
                                     blurRadius: 16 * glow,
                                   )]
                                 : [const BoxShadow(

@@ -186,14 +186,14 @@ class _BubbleWidget extends StatelessWidget {
       height: 70,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withOpacity(0.75),
+        color: color.withValues(alpha: 0.75),
         border: Border.all(
-          color: isSelected ? Colors.white : color.withOpacity(0.5),
+          color: isSelected ? Colors.white : color.withValues(alpha: 0.5),
           width: isSelected ? 3 : 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.4),
+            color: color.withValues(alpha: 0.4),
             blurRadius: isSelected ? 16 : 6,
           ),
         ],
@@ -206,7 +206,7 @@ class _BubbleWidget extends StatelessWidget {
             child: Container(
               width: 18, height: 10,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.55),
+                color: Colors.white.withValues(alpha: 0.55),
                 borderRadius: BorderRadius.circular(8),
               ),
             ),

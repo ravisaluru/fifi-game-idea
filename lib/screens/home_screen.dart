@@ -146,10 +146,10 @@ class _HomeScreenState extends State<HomeScreen>
                       padding: const EdgeInsets.symmetric(
                           horizontal: 24, vertical: 12),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.15),
+                        color: Colors.white.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
-                            color: Colors.white.withOpacity(0.4), width: 1.5),
+                            color: Colors.white.withValues(alpha: 0.4), width: 1.5),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,

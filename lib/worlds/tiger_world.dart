@@ -194,7 +194,7 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                   right: 24, top: size.height * 0.24,
                   child: Container(
                     width: 4, height: 80,
-                    color: Colors.yellow.withOpacity(0.7),
+                    color: Colors.yellow.withValues(alpha: 0.7),
                   ),
                 ),
 
@@ -256,7 +256,7 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                   child: Center(
                     child: Text(
                       'Tap or use joystick to move →',
-                      style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
                     ),
                   ),
                 ),

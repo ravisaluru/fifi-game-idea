@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../models/multiplayer_session.dart';
 import '../models/game_state.dart';
 import '../services/multiplayer_service.dart';
 
@@ -87,7 +86,7 @@ class _MultiplayerScoreboardState extends State<MultiplayerScoreboard> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.5),
+          color: Colors.black.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: Colors.white24),
         ),

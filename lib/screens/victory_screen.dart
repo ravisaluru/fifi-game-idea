@@ -162,7 +162,7 @@ class _VictoryScreenState extends State<VictoryScreen>
                   // Home
                   _BigButton(
                     label: 'Home 🏠',
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     textColor: Colors.white,
                     onTap: () => Navigator.popUntil(context, ModalRoute.withName('/')),
                   ),
@@ -201,7 +201,7 @@ class _BigButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -237,7 +237,7 @@ class _ConfettiPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     for (final p in particles) {
       if (p.y > 1.1) continue;
-      final paint = Paint()..color = p.color.withOpacity(0.85);
+      final paint = Paint()..color = p.color.withValues(alpha: 0.85);
       canvas.save();
       canvas.translate(p.x * size.width, p.y * size.height);
       canvas.rotate(p.rotation);

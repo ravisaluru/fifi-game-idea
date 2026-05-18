@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
-import '../models/multiplayer_session.dart';
 import '../models/character.dart';
 import '../widgets/animated_world_background.dart';
 
@@ -86,8 +85,8 @@ class _AiSetupScreenState extends State<AiSetupScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: selected
-                              ? Colors.white.withOpacity(0.3)
-                              : Colors.white.withOpacity(0.1),
+                              ? Colors.white.withValues(alpha: 0.3)
+                              : Colors.white.withValues(alpha: 0.1),
                           border: Border.all(
                             color: selected ? Colors.white : Colors.white30,
                             width: selected ? 3 : 1.5,
@@ -130,8 +129,8 @@ class _AiSetupScreenState extends State<AiSetupScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(16),
                           color: selected
-                              ? Colors.white.withOpacity(0.25)
-                              : Colors.white.withOpacity(0.08),
+                              ? Colors.white.withValues(alpha: 0.25)
+                              : Colors.white.withValues(alpha: 0.08),
                           border: Border.all(
                             color: selected ? Colors.white : Colors.transparent,
                             width: 2,
@@ -190,7 +189,7 @@ class _AiSetupScreenState extends State<AiSetupScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.orange.withOpacity(0.5),
+                        color: Colors.orange.withValues(alpha: 0.5),
                         blurRadius: 16,
                         offset: const Offset(0, 6),
                       ),

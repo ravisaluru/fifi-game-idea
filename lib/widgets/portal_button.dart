@@ -102,7 +102,7 @@ class _PortalButtonState extends State<PortalButton>
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF9C27B0).withOpacity(0.6),
+                          color: const Color(0xFF9C27B0).withValues(alpha: 0.6),
                           blurRadius: 20,
                           spreadRadius: 5,
                         ),

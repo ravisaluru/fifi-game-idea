@@ -277,7 +277,7 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
                   child: Text(
                     'Tap leaves & rocks to find chests! 🎁',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 13,
                     ),
                   ),
@@ -307,11 +307,11 @@ class _ScoreChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: highlight
-            ? Colors.yellow.withOpacity(0.25)
-            : Colors.black.withOpacity(0.25),
+            ? Colors.yellow.withValues(alpha: 0.25)
+            : Colors.black.withValues(alpha: 0.25),
         borderRadius: BorderRadius.circular(12),
         border: highlight
-            ? Border.all(color: Colors.yellow.withOpacity(0.6), width: 1.5)
+            ? Border.all(color: Colors.yellow.withValues(alpha: 0.6), width: 1.5)
             : null,
       ),
       child: Row(

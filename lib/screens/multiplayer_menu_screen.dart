@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../models/game_state.dart';
-import '../models/multiplayer_session.dart';
 import '../widgets/animated_world_background.dart';
 
 class MultiplayerMenuScreen extends StatelessWidget {
@@ -106,7 +103,7 @@ class _ModeCardState extends State<_ModeCard> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(0.5),
+                color: widget.color.withValues(alpha: 0.5),
                 blurRadius: 16,
                 offset: const Offset(0, 6),
               ),

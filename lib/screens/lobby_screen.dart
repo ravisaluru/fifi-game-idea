@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import '../models/game_state.dart';
-import '../models/multiplayer_session.dart';
 import '../models/character.dart';
 import '../services/multiplayer_service.dart';
 import '../widgets/animated_world_background.dart';
@@ -308,7 +307,7 @@ class _JoinView extends StatelessWidget {
           decoration: InputDecoration(
             counterText: '',
             hintText: '????',
-            hintStyle: TextStyle(color: Colors.white.withOpacity(0.3),
+            hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3),
                 fontSize: 36, letterSpacing: 12),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
@@ -360,7 +359,7 @@ class _WaitingRoom extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
+            color: Colors.white.withValues(alpha: 0.15),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white38, width: 2),
           ),
@@ -439,7 +438,7 @@ class _LobbyButton extends StatelessWidget {
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(29),
-        boxShadow: [BoxShadow(color: color.withOpacity(0.4), blurRadius: 12,
+        boxShadow: [BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 12,
             offset: const Offset(0, 5))],
       ),
       child: Center(

@@ -24,7 +24,6 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
   List<int> _sequence = [];
   List<int> _playerTaps = [];
   bool _isShowingSequence = false;
-  int _glowingIndex = -1;
   bool _playerCanTap = false;
 
   late List<AnimationController> _glowControllers;
@@ -67,12 +66,10 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
       setState(() {
         _isShowingSequence = false;
         _playerCanTap = true;
-        _glowingIndex = -1;
       });
       return;
     }
 
-    setState(() => _glowingIndex = _sequence[step]);
     await _glowControllers[_sequence[step]].forward(from: 0);
     await Future.delayed(const Duration(milliseconds: 100));
     await _glowControllers[_sequence[step]].reverse();
@@ -203,7 +200,7 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
                           ),
                           boxShadow: glow > 0.1
                               ? [BoxShadow(
-                                  color: const Color(0xFF76FF03).withOpacity(glow * 0.8),
+                                  color: const Color(0xFF76FF03).withValues(alpha: glow * 0.8),
                                   blurRadius: 24 * glow,
                                   spreadRadius: 8 * glow,
                                 )]

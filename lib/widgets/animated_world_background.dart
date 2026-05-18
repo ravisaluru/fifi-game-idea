@@ -267,7 +267,7 @@ class _GrassPainter extends CustomPainter {
 
       // Wave lines
       final wavePaint = Paint()
-        ..color = Colors.white.withOpacity(0.15)
+        ..color = Colors.white.withValues(alpha: 0.15)
         ..style = PaintingStyle.stroke
         ..strokeWidth = 2;
       for (int i = 0; i < 3; i++) {
@@ -287,13 +287,13 @@ class _GrassPainter extends CustomPainter {
       ..shader = LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [color, color.withGreen((color.green - 20).clamp(0, 255))],
+        colors: [color, color.withGreen(((color.g * 255.0).round().clamp(0, 255) - 20).clamp(0, 255))],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), basePaint);
 
     // Grass blades
     final bladePaint = Paint()
-      ..color = color.withGreen((color.green + 30).clamp(0, 255))
+      ..color = color.withGreen(((color.g * 255.0).round().clamp(0, 255) + 30).clamp(0, 255))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5
       ..strokeCap = StrokeCap.round;
@@ -332,7 +332,7 @@ class _TreePainter extends CustomPainter {
     final trunkPaint = Paint()..color = const Color(0xFF5D4037);
     final foliagePaint = Paint()..color = color;
     final highlightPaint = Paint()
-      ..color = color.withGreen((color.green + 40).clamp(0, 255));
+      ..color = color.withGreen(((color.g * 255.0).round().clamp(0, 255) + 40).clamp(0, 255));
 
     final swayAngle = sin(sway * pi) * 0.04;
     canvas.save();
@@ -407,7 +407,7 @@ class _SunPainter extends CustomPainter {
 
     // Rays
     final rayPaint = Paint()
-      ..color = const Color(0xFFFFD54F).withOpacity(0.25)
+      ..color = const Color(0xFFFFD54F).withValues(alpha: 0.25)
       ..strokeWidth = 2
       ..style = PaintingStyle.stroke;
     for (int i = 0; i < 8; i++) {
@@ -423,7 +423,7 @@ class _SunPainter extends CustomPainter {
     canvas.drawCircle(
       center,
       radius,
-      Paint()..color = const Color(0xFFFFD54F).withOpacity(0.8),
+      Paint()..color = const Color(0xFFFFD54F).withValues(alpha: 0.8),
     );
   }
 
@@ -438,7 +438,7 @@ class _RainPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFF90CAF9).withOpacity(0.55)
+      ..color = const Color(0xFF90CAF9).withValues(alpha: 0.55)
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round;
     for (final d in drops) {
@@ -466,7 +466,7 @@ class _StarsPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(x, y),
         1.5 + rng.nextDouble() * 1.5,
-        Paint()..color = Colors.white.withOpacity(opacity.clamp(0.1, 0.9)),
+        Paint()..color = Colors.white.withValues(alpha: opacity.clamp(0.1, 0.9)),
       );
     }
   }
