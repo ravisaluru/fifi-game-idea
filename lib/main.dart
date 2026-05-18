@@ -47,6 +47,7 @@ void main() async {
   }
 
   runApp(FifiApp(firebaseAvailable: _firebaseAvailable));
+  WidgetsBinding.instance.addPostFrameCallback((_) {});
 }
 
 class FifiApp extends StatelessWidget {
