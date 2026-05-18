@@ -71,6 +71,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         if (mounted) b.controller.forward();
       });
       b.controller.addStatusListener((status) {
+        if (!mounted) return;
         if (status == AnimationStatus.completed && !b.isPopped) {
           context.read<GameState>().loseLife();
           if (context.read<GameState>().lives <= 0) _onLose();

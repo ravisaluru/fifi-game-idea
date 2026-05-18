@@ -19,7 +19,8 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     with TickerProviderStateMixin {
   static const int _stoneCount = 12;
 
-  late List<Offset> _stonePositions;
+  List<Offset> _stonePositions = [];
+  Size? _lastSize;
   late List<int> _sequence;
   late List<AnimationController> _glowControllers;
   int _playerStep = 0;
@@ -152,7 +153,10 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
   Widget build(BuildContext context) {
     final state = context.watch<GameState>();
     final size = MediaQuery.of(context).size;
-    _buildPositions(size);
+    if (_stonePositions.isEmpty || size != _lastSize) {
+      _lastSize = size;
+      _buildPositions(size);
+    }
 
     return Scaffold(
       body: AnimatedWorldBackground(

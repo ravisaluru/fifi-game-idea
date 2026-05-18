@@ -145,10 +145,10 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
     await _shakeController.forward(from: 0);
     _shakeController.reset();
 
+    if (!mounted) return;
     final state =
         context.read<GameState>(); // ignore: use_build_context_synchronously
     state.loseLife();
-    if (!mounted) return;
     setState(() {
       _playerProgress = max(0, _playerProgress - _stepSize * 2);
       _wasCaught = false;
