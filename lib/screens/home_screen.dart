@@ -44,7 +44,12 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _onPortalTap(BuildContext context) {
-    Navigator.pushNamed(context, '/character');
+    final state = context.read<GameState>();
+    if (state.selectedCharacter != null) {
+      Navigator.pushNamed(context, '/world-select');
+    } else {
+      Navigator.pushNamed(context, '/character');
+    }
   }
 
   @override

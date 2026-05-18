@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/character.dart';
 import '../models/game_state.dart';
+import '../widgets/shimmer_button.dart';
 
 class CharacterSelectScreen extends StatefulWidget {
   const CharacterSelectScreen({super.key});
@@ -58,8 +59,7 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
 
   void _confirm(BuildContext context) {
     context.read<GameState>().selectCharacter(_character);
-    final worldId = context.read<GameState>().pickNextWorld();
-    Navigator.pushReplacementNamed(context, '/world/${worldId.name}');
+    Navigator.pushReplacementNamed(context, '/world-select');
   }
 
   @override
@@ -249,7 +249,7 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
               // Let's Go button
               Padding(
                 padding: const EdgeInsets.only(bottom: 32),
-                child: GestureDetector(
+                child: ShimmerButton(
                   onTap: () => _confirm(context),
                   child: Container(
                     width: 200,
