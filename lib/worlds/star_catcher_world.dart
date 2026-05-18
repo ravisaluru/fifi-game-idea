@@ -6,6 +6,7 @@ import '../models/game_state.dart';
 import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
+import '../widgets/particle_burst.dart';
 import '../widgets/virtual_controls.dart';
 
 class _FallingStar {
@@ -42,6 +43,9 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
   final Random _rng = Random();
   Timer? _spawnTimer;
   DateTime? _lastFrame;
+  int _burstCount = 0;
+  bool _showBurst = false;
+  Offset _burstPosition = Offset.zero;
 
   @override
   void initState() {
@@ -115,12 +119,18 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
     if (changed) setState(() {});
   }
 
-  void _onStarTap(_FallingStar star) {
+  void _onStarTap(_FallingStar star, Offset tapPosition) {
     if (star.caught) return;
     star.caught = true;
     setState(() {
       _caught++;
       _stars.remove(star);
+      _burstCount++;
+      _burstPosition = tapPosition;
+      _showBurst = true;
+    });
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) setState(() => _showBurst = false);
     });
     if (_caught >= _target) _onWin();
   }
@@ -184,7 +194,7 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
                     left: star.x * size.width - 30,
                     top: star.y * size.height,
                     child: GestureDetector(
-                      onTap: () => _onStarTap(star),
+                      onTap: () => _onStarTap(star, Offset(star.x * size.width, star.y * size.height)),
                       child: Transform.rotate(
                         angle: star.rotation,
                         child: const Text('⭐', style: TextStyle(fontSize: 44)),
@@ -210,6 +220,20 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
                 onRelease: () {},
                 showJump: false,
               ),
+              if (_showBurst)
+                Positioned(
+                  left: _burstPosition.dx - 40,
+                  top: _burstPosition.dy - 40,
+                  child: SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: ParticleBurst(
+                      key: ValueKey(_burstCount),
+                      color: Colors.yellow,
+                      particleCount: 14,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

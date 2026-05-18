@@ -5,6 +5,7 @@ import '../models/game_state.dart';
 import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
+import '../widgets/particle_burst.dart';
 
 enum _BubbleColor { red, yellow, blue, green, purple }
 
@@ -40,6 +41,9 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   late List<_Bubble> _bubbles;
   _Bubble? _selected;
   int _poppedPairs = 0;
+  int _burstCount = 0;
+  bool _showBurst = false;
+  Color _burstColor = Colors.yellow;
 
   @override
   void initState() {
@@ -103,6 +107,14 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         _selected = null;
         _poppedPairs++;
       });
+      setState(() {
+        _burstCount++;
+        _burstColor = _colorMap[tapped.color]!;
+        _showBurst = true;
+      });
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) setState(() => _showBurst = false);
+      });
       if (_poppedPairs >= _pairs) _onWin();
     } else {
       setState(() {
@@ -164,6 +176,20 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
                   },
                 );
               }),
+              if (_showBurst)
+                Positioned(
+                  left: MediaQuery.of(context).size.width / 2 - 40,
+                  top: MediaQuery.of(context).size.height * 0.4 - 40,
+                  child: SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: ParticleBurst(
+                      key: ValueKey(_burstCount),
+                      color: _burstColor,
+                      particleCount: 12,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

@@ -2,6 +2,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
+import '../widgets/bouncing_emoji.dart';
+import '../widgets/particle_burst.dart';
 
 class VictoryArgs {
   final bool didWin;
@@ -29,6 +31,7 @@ class _VictoryScreenState extends State<VictoryScreen>
   late Animation<double> _scaleAnim;
   final List<_ConfettiParticle> _particles = [];
   final Random _rng = Random();
+  int _burstCount = 0;
 
   @override
   void initState() {
@@ -48,6 +51,7 @@ class _VictoryScreenState extends State<VictoryScreen>
       if (args?.didWin == true) {
         _spawnConfetti();
         _confettiController.forward();
+        setState(() => _burstCount++);
       }
       _scaleController.forward();
     });
@@ -115,6 +119,29 @@ class _VictoryScreenState extends State<VictoryScreen>
                 },
               ),
 
+            if (didWin)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: Stack(
+                    children: [
+                      Colors.yellow, Colors.orange, Colors.pink, Colors.cyan,
+                    ].asMap().entries.map((e) => Positioned(
+                      left: MediaQuery.of(context).size.width * (0.15 + e.key * 0.22),
+                      top: MediaQuery.of(context).size.height * 0.35,
+                      child: SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: ParticleBurst(
+                          key: ValueKey('victory_${_burstCount}_${e.key}'),
+                          color: e.value,
+                          particleCount: 10,
+                        ),
+                      ),
+                    )).toList(),
+                  ),
+                ),
+              ),
+
             // Main content
             SafeArea(
               child: Column(
@@ -122,10 +149,7 @@ class _VictoryScreenState extends State<VictoryScreen>
                 children: [
                   ScaleTransition(
                     scale: _scaleAnim,
-                    child: Text(
-                      didWin ? '🏆' : '💪',
-                      style: const TextStyle(fontSize: 96),
-                    ),
+                    child: BouncingEmoji(emoji: didWin ? '🏆' : '💪', fontSize: 96),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -153,7 +177,7 @@ class _VictoryScreenState extends State<VictoryScreen>
                     textColor: Colors.black87,
                     onTap: () {
                       context.read<GameState>().resetForWorld();
-                      Navigator.pushReplacementNamed(context, '/character');
+                      Navigator.pushReplacementNamed(context, '/world-select');
                     },
                   ),
 
