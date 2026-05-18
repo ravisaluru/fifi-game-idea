@@ -115,7 +115,7 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
   }
 
   void _onWin() {
-    context.read<GameState>().completeWorld();
+    context.read<GameState>().completeWorld(WorldId.firefly);
     context.read<GameState>().addCoins(5);
     Navigator.pushReplacementNamed(
       context, '/victory',

@@ -155,7 +155,7 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
     final maxAiCoins = _opponents.map((a) => a.coins).reduce(max);
     final didWin = _playerCoins >= maxAiCoins; // tie goes to player
 
-    context.read<GameState>().completeWorld();
+    context.read<GameState>().completeWorld(WorldId.treasure);
     context.read<GameState>().addCoins(_playerCoins);
 
     Navigator.pushReplacementNamed(context, '/victory',

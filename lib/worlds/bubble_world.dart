@@ -115,7 +115,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   }
 
   void _onWin() {
-    context.read<GameState>().completeWorld();
+    context.read<GameState>().completeWorld(WorldId.bubble);
     context.read<GameState>().addCoins(5);
     Navigator.pushReplacementNamed(context, '/victory',
         arguments: const VictoryArgs(didWin: true, coinsEarned: 5, worldName: 'Bubble Sky'));

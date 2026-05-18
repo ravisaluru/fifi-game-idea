@@ -120,7 +120,7 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
   }
 
   void _onWin() {
-    context.read<GameState>().completeWorld();
+    context.read<GameState>().completeWorld(WorldId.tiger);
     context.read<GameState>().addCoins(5);
     Navigator.pushReplacementNamed(context, '/victory',
         arguments: const VictoryArgs(didWin: true, coinsEarned: 5, worldName: 'Tiger Plains'));

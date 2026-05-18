@@ -101,7 +101,7 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
   }
 
   void _onWin() {
-    context.read<GameState>().completeWorld();
+    context.read<GameState>().completeWorld(WorldId.stones);
     context.read<GameState>().addCoins(5);
     Navigator.pushReplacementNamed(context, '/victory',
         arguments: const VictoryArgs(didWin: true, coinsEarned: 5, worldName: 'Stepping Stones'));

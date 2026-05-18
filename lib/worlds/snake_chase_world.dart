@@ -134,7 +134,7 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
 
   void _onWin() {
     _countdownTimer?.cancel();
-    context.read<GameState>().completeWorld();
+    context.read<GameState>().completeWorld(WorldId.snake);
     context.read<GameState>().addCoins(8);
     Navigator.pushReplacementNamed(context, '/victory',
         arguments: const VictoryArgs(didWin: true, coinsEarned: 8, worldName: 'Snake Grassland'));

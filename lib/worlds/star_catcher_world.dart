@@ -133,7 +133,7 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
 
   void _onWin() {
     _spawnTimer?.cancel();
-    context.read<GameState>().completeWorld();
+    context.read<GameState>().completeWorld(WorldId.star);
     context.read<GameState>().addCoins(5);
     Navigator.pushReplacementNamed(context, '/victory',
         arguments: const VictoryArgs(didWin: true, coinsEarned: 5, worldName: 'Star Shower'));
