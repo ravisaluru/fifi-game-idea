@@ -97,16 +97,17 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
   }
 
   void _onTap() {
-    if (_isWatching && !_wasCaught) _onCaught();
-    else if (!_isWatching) _onMoveInput();
+    if (_isWatching && !_wasCaught) { _onCaught(); }
+    else if (!_isWatching) { _onMoveInput(); }
   }
 
   void _onCaught() async {
-    if (_wasCaught) return;
+    if (_wasCaught) { return; }
     _wasCaught = true;
     await _shakeController.forward(from: 0);
     _shakeController.reset();
 
+    // ignore: use_build_context_synchronously
     final state = context.read<GameState>();
     state.loseLife();
     setState(() {

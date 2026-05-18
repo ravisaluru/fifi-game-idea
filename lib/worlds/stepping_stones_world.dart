@@ -42,7 +42,7 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
 
   @override
   void dispose() {
-    for (final c in _glowControllers) c.dispose();
+    for (final c in _glowControllers) { c.dispose(); }
     super.dispose();
   }
 

@@ -111,7 +111,7 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
         }
       }
     }
-    for (final s in toRemove) _stars.remove(s);
+    for (final s in toRemove) { _stars.remove(s); }
     if (changed) setState(() {});
   }
 

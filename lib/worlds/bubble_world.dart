@@ -78,7 +78,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
 
   @override
   void dispose() {
-    for (final b in _bubbles) b.controller.dispose();
+    for (final b in _bubbles) { b.controller.dispose(); }
     super.dispose();
   }
 

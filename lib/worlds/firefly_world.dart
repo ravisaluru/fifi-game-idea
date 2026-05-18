@@ -44,7 +44,7 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
 
   @override
   void dispose() {
-    for (final c in _glowControllers) c.dispose();
+    for (final c in _glowControllers) { c.dispose(); }
     super.dispose();
   }
 
