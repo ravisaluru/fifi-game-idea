@@ -29,6 +29,9 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
   late List<_CloudData> _clouds;
   late List<_RainDrop> _rainDrops;
   late List<_TreeData> _trees;
+  late AnimationController _driftController;
+  late List<_DriftBlob> _driftBlobs;
+  late List<_RiverParticle> _riverParticles;
 
   @override
   void initState() {
@@ -71,6 +74,23 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
       trunkWidth: 10 + _rng.nextDouble() * 6,
       layers: 2 + _rng.nextInt(2),
       color: _treeColorForTheme(widget.theme),
+    ));
+
+    _driftController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 120),
+    )..repeat();
+
+    _driftBlobs = [
+      _DriftBlob(xBase: 0.05, y: 0.06, width: 100, height: 28, phaseOffset: 0.0),
+      _DriftBlob(xBase: 0.40, y: 0.11, width: 130, height: 32, phaseOffset: 1.1),
+      _DriftBlob(xBase: 0.72, y: 0.07, width: 90, height: 24, phaseOffset: 2.2),
+    ];
+
+    _riverParticles = List.generate(20, (i) => _RiverParticle(
+      x: _rng.nextDouble(),
+      yBase: _rng.nextDouble(),
+      phaseOffset: _rng.nextDouble() * 2 * pi,
     ));
   }
 
@@ -126,6 +146,7 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
     _grassController.dispose();
     _cloudController.dispose();
     _rainController.dispose();
+    _driftController.dispose();
     super.dispose();
   }
 
@@ -137,7 +158,7 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
 
       return AnimatedBuilder(
         animation: Listenable.merge([
-          _grassController, _cloudController, _rainController,
+          _grassController, _cloudController, _rainController, _driftController,
         ]),
         builder: (context, _) {
           // Update cloud positions
@@ -234,6 +255,50 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
                   size: Size(w, h * 0.6),
                   painter: _StarsPainter(pulse: _grassController.value),
                 ),
+
+              // Drifting cloud blobs (meadow / grassland only)
+              if (widget.theme == BackgroundTheme.meadow ||
+                  widget.theme == BackgroundTheme.grassland)
+                ..._driftBlobs.map((b) {
+                  final t = _driftController.value;
+                  final sineOffset = sin(t * 2 * pi + b.phaseOffset) * 0.06;
+                  final x = ((b.xBase + t * 0.25 + sineOffset) % 1.15) - 0.05;
+                  return Positioned(
+                    left: x * w,
+                    top: b.y * h,
+                    child: Opacity(
+                      opacity: 0.60,
+                      child: Container(
+                        width: b.width,
+                        height: b.height,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(b.height / 2),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+
+              // Upward-floating particles (river only)
+              if (widget.theme == BackgroundTheme.river)
+                ..._riverParticles.map((p) {
+                  final t = _driftController.value;
+                  final rawY = p.yBase - t * 0.4 + sin(t * 2 * pi * 3 + p.phaseOffset) * 0.03;
+                  final y = rawY % 1.0;
+                  return Positioned(
+                    left: p.x * w,
+                    top: y * h,
+                    child: Container(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
+                        color: Colors.white54,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  );
+                }),
 
               // Game content on top
               widget.child,
@@ -494,6 +559,26 @@ class _TreeData {
     required this.x, required this.height, required this.trunkWidth,
     required this.layers, required this.color,
   });
+}
+
+class _DriftBlob {
+  final double xBase;
+  final double y;
+  final double width;
+  final double height;
+  final double phaseOffset;
+  _DriftBlob({
+    required this.xBase, required this.y,
+    required this.width, required this.height,
+    required this.phaseOffset,
+  });
+}
+
+class _RiverParticle {
+  final double x;
+  double yBase;
+  final double phaseOffset;
+  _RiverParticle({required this.x, required this.yBase, required this.phaseOffset});
 }
 
 // Extension for Path sinusoidal lines
