@@ -5,20 +5,23 @@ import 'package:provider/provider.dart';
 import '../models/game_state.dart';
 import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
-import '../widgets/virtual_controls.dart';
+import '../widgets/back_to_menu_button.dart';
 
-class _ChestSpot {
+class _CoverSpot {
   final int id;
-  final Offset pos; // normalized 0..1
-  final int coins;
+  final Offset pos;
   final String coverEmoji;
-  bool found = false;
+  final bool hasTreasure;
+  final int coins;
+  bool collected = false; // treasure taken
+  bool revealed = false;  // currently flipped
 
-  _ChestSpot({
+  _CoverSpot({
     required this.id,
     required this.pos,
-    required this.coins,
     required this.coverEmoji,
+    required this.hasTreasure,
+    required this.coins,
   });
 }
 
@@ -26,7 +29,7 @@ class _AiOpponent {
   final String emoji;
   final String name;
   int coins = 0;
-  double discoverInterval; // seconds
+  double discoverInterval;
 
   _AiOpponent(
       {required this.emoji,
@@ -41,34 +44,24 @@ class TreasureHuntScreen extends StatefulWidget {
   State<TreasureHuntScreen> createState() => _TreasureHuntScreenState();
 }
 
-class _TreasureHuntScreenState extends State<TreasureHuntScreen>
-    with SingleTickerProviderStateMixin {
-  static const int _gameDuration = 120; // 2 minutes
-  static const int _chestCount = 20;
+class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
+  static const int _gameDuration = 120;
+  static const int _spotCount = 25;
+  static const int _treasureCount = 10;
 
-  late List<_ChestSpot> _chests;
+  late List<_CoverSpot> _spots;
   late List<_AiOpponent> _opponents;
   int _playerCoins = 0;
-  Offset _playerPos = const Offset(0.5, 0.5);
-  Offset _moveDir = Offset.zero;
+  int _playerTreasuresFound = 0;
   int _secondsLeft = _gameDuration;
   bool _gameOver = false;
 
-  late AnimationController _ticker;
   Timer? _countdownTimer;
   Timer? _aiTimer;
-  DateTime? _lastFrame;
   final Random _rng = Random();
 
   static const List<String> _coverEmojis = [
-    '🍃',
-    '🪨',
-    '🌿',
-    '🍂',
-    '🌱',
-    '🪵',
-    '🌾',
-    '🍁',
+    '🍃', '🪨', '🌿', '🍂', '🌱', '🪵', '🌾', '🍁',
   ];
 
   @override
@@ -76,14 +69,19 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
     super.initState();
     context.read<GameState>().resetForWorld();
 
-    _chests = List.generate(
-        _chestCount,
-        (i) => _ChestSpot(
+    // Generate spots — first _treasureCount have treasure, rest don't
+    final indices = List.generate(_spotCount, (i) => i)..shuffle(_rng);
+    final treasureIndices = indices.take(_treasureCount).toSet();
+
+    _spots = List.generate(
+        _spotCount,
+        (i) => _CoverSpot(
               id: i,
               pos: Offset(0.06 + _rng.nextDouble() * 0.88,
-                  0.12 + _rng.nextDouble() * 0.72),
-              coins: 1 + _rng.nextInt(5),
+                  0.18 + _rng.nextDouble() * 0.65),
               coverEmoji: _coverEmojis[_rng.nextInt(_coverEmojis.length)],
+              hasTreasure: treasureIndices.contains(i),
+              coins: 1 + _rng.nextInt(5),
             ));
 
     _opponents = [
@@ -91,30 +89,22 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
       _AiOpponent(emoji: '👻', name: 'Ghost', discoverInterval: 4.0),
     ];
 
-    _ticker = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 120),
-    )..repeat();
-    _ticker.addListener(_onTick);
-
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       setState(() => _secondsLeft--);
       if (_secondsLeft <= 0) _onTimeUp();
     });
 
-    // AI discovery timer
     _aiTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (!mounted) return;
       for (final ai in _opponents) {
-        // Each AI discovers a chest every ~discoverInterval seconds
         if (_rng.nextDouble() < 0.5 / ai.discoverInterval) {
-          final unfound = _chests.where((c) => !c.found).toList();
-          if (unfound.isEmpty) break;
-          final chest = unfound[_rng.nextInt(unfound.length)];
+          final available = _spots.where((s) => s.hasTreasure && !s.collected).toList();
+          if (available.isEmpty) break;
+          final spot = available[_rng.nextInt(available.length)];
           setState(() {
-            chest.found = true;
-            ai.coins += chest.coins;
+            spot.collected = true;
+            ai.coins += spot.coins;
           });
         }
       }
@@ -123,43 +113,35 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
 
   @override
   void dispose() {
-    _ticker.removeListener(_onTick);
-    _ticker.dispose();
     _countdownTimer?.cancel();
     _aiTimer?.cancel();
     super.dispose();
   }
 
-  void _onTick() {
-    if (!mounted || _gameOver) return;
+  void _onSpotTap(_CoverSpot spot) {
+    if (spot.collected || spot.revealed || _gameOver) return;
 
-    final now = DateTime.now();
-    final dt = _lastFrame != null
-        ? now.difference(_lastFrame!).inMilliseconds / 16.0
-        : 1.0;
-    _lastFrame = now;
-
-    if (_moveDir != Offset.zero) {
-      final speed = 0.005 * dt;
-      final newPos = _playerPos + _moveDir * speed;
-      setState(() {
-        _playerPos = Offset(
-          newPos.dx.clamp(0.03, 0.97),
-          newPos.dy.clamp(0.08, 0.92),
-        );
-      });
-    }
-  }
-
-  void _onChestTap(_ChestSpot chest) {
-    if (chest.found) return;
     setState(() {
-      chest.found = true;
-      _playerCoins += chest.coins;
+      spot.revealed = true;
     });
 
-    // Check if all chests found
-    if (_chests.every((c) => c.found)) _onTimeUp();
+    if (spot.hasTreasure) {
+      // Collect treasure
+      setState(() {
+        spot.collected = true;
+        _playerCoins += spot.coins;
+        _playerTreasuresFound++;
+      });
+
+      // Check if all player-findable treasures are found
+      final remainingTreasures = _spots.where((s) => s.hasTreasure && !s.collected).length;
+      if (remainingTreasures == 0) _onTimeUp();
+    } else {
+      // No treasure — re-hide after 2 seconds
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) setState(() => spot.revealed = false);
+      });
+    }
   }
 
   void _onTimeUp() {
@@ -169,9 +151,12 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
     _aiTimer?.cancel();
 
     final maxAiCoins = _opponents.map((a) => a.coins).reduce(max);
-    final didWin = _playerCoins >= maxAiCoins; // tie goes to player
+    final didWin = _playerCoins >= maxAiCoins;
 
-    context.read<GameState>().completeWorld(WorldId.treasure);
+    // Only complete world on win
+    if (didWin) {
+      context.read<GameState>().completeWorld(WorldId.treasure);
+    }
     context.read<GameState>().addCoins(_playerCoins);
 
     Navigator.pushReplacementNamed(context, '/victory',
@@ -211,6 +196,8 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
                 ),
               ),
 
+              const BackToMenuButton(),
+
               // Scoreboard
               Positioned(
                 top: 40,
@@ -236,70 +223,77 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen>
                 ),
               ),
 
-              // Chests (hidden until found)
-              ..._chests.map((chest) {
-                if (chest.found) return const SizedBox.shrink();
-                return Positioned(
-                  left: chest.pos.dx * size.width - 24,
-                  top: chest.pos.dy * size.height - 24,
-                  child: GestureDetector(
-                    onTap: () => _onChestTap(chest),
+              // Treasures found counter
+              Positioned(
+                top: 80,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     child: Text(
-                      chest.coverEmoji,
-                      style: const TextStyle(fontSize: 36),
+                      '🪙 Treasures: $_playerTreasuresFound / $_treasureCount',
+                      style: const TextStyle(
+                        color: Colors.yellow,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Cover spots
+              ..._spots.map((spot) {
+                // Collected spots show coin permanently
+                if (spot.collected) {
+                  return Positioned(
+                    left: spot.pos.dx * size.width - 18,
+                    top: spot.pos.dy * size.height - 18,
+                    child: const Text('🪙', style: TextStyle(fontSize: 28)),
+                  );
+                }
+                // Revealed but no treasure — show ❌
+                if (spot.revealed && !spot.hasTreasure) {
+                  return Positioned(
+                    left: spot.pos.dx * size.width - 18,
+                    top: spot.pos.dy * size.height - 18,
+                    child: const Text('❌', style: TextStyle(fontSize: 28)),
+                  );
+                }
+                // Hidden — show cover emoji
+                return Positioned(
+                  left: spot.pos.dx * size.width - 24,
+                  top: spot.pos.dy * size.height - 24,
+                  child: GestureDetector(
+                    onTap: () => _onSpotTap(spot),
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        spot.coverEmoji,
+                        style: const TextStyle(fontSize: 36),
+                      ),
                     ),
                   ),
                 );
               }),
 
-              // Found chests (coin burst placeholder)
-              ..._chests.where((c) => c.found).map((chest) => Positioned(
-                    left: chest.pos.dx * size.width - 12,
-                    top: chest.pos.dy * size.height - 12,
-                    child: const Text('🪙', style: TextStyle(fontSize: 20)),
-                  )),
-
-              // Player
-              AnimatedBuilder(
-                animation: _ticker,
-                builder: (context, _) => Positioned(
-                  left: _playerPos.dx * size.width - 22,
-                  top: _playerPos.dy * size.height - 22,
-                  child: Text(
-                    context.read<GameState>().selectedCharacter?.emoji ?? '🧒',
-                    style: const TextStyle(fontSize: 40),
-                  ),
-                ),
-              ),
-
-              // Virtual controls
-              VirtualControls(
-                onMove: (dir) => setState(() => _moveDir = dir),
-                onRelease: () => setState(() => _moveDir = Offset.zero),
-                showJump: false,
-                showAction: true,
-                onAction: () {
-                  // Try to find nearest chest
-                  for (final chest in _chests) {
-                    if (chest.found) continue;
-                    final dx = chest.pos.dx - _playerPos.dx;
-                    final dy = chest.pos.dy - _playerPos.dy;
-                    if (sqrt(dx * dx + dy * dy) < 0.12) {
-                      _onChestTap(chest);
-                      break;
-                    }
-                  }
-                },
-              ),
-
               // Hint
               Positioned(
-                bottom: 150,
+                bottom: 40,
                 left: 0,
                 right: 0,
                 child: Center(
                   child: Text(
-                    'Tap leaves & rocks to find chests! 🎁',
+                    'Tap leaves & rocks to find hidden treasure! 🎁',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 13,

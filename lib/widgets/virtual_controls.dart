@@ -30,17 +30,17 @@ class _VirtualControlsState extends State<VirtualControls> {
   static const double _baseRadius = 55.0;
   static const double _thumbRadius = 25.0;
 
-  void _onPanUpdate(DragUpdateDetails details, Offset baseCenter) {
-    final localPos = details.localPosition - baseCenter;
-    final dist = localPos.distance;
+  void _onPanUpdate(Offset localPos, Offset baseCenter) {
+    final pos = localPos - baseCenter;
+    final dist = pos.distance;
     final clamped =
-        dist > _baseRadius ? localPos / dist * _baseRadius : localPos;
+        dist > _baseRadius ? pos / dist * _baseRadius : pos;
     setState(() => _thumbOffset = clamped);
     final normalized = clamped / _baseRadius;
     widget.onMove(normalized);
   }
 
-  void _onPanEnd(DragEndDetails _) {
+  void _onPanEnd() {
     setState(() => _thumbOffset = Offset.zero);
     widget.onRelease();
   }
@@ -55,9 +55,11 @@ class _VirtualControlsState extends State<VirtualControls> {
         Positioned(
           left: 16,
           bottom: 24,
-          child: GestureDetector(
-            onPanUpdate: (d) => _onPanUpdate(d, baseCenter),
-            onPanEnd: _onPanEnd,
+          child: Listener(
+            onPointerDown: (e) => _onPanUpdate(e.localPosition, baseCenter),
+            onPointerMove: (e) => _onPanUpdate(e.localPosition, baseCenter),
+            onPointerUp: (_) => _onPanEnd(),
+            onPointerCancel: (_) => _onPanEnd(),
             child: SizedBox(
               width: (_baseRadius + 12) * 2,
               height: (_baseRadius + 12) * 2,
@@ -129,10 +131,10 @@ class _ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => onTapDown(),
-      onTapUp: (_) => onTapUp(),
-      onTapCancel: onTapUp,
+    return Listener(
+      onPointerDown: (_) => onTapDown(),
+      onPointerUp: (_) => onTapUp(),
+      onPointerCancel: (_) => onTapUp(),
       child: AnimatedScale(
         scale: isPressed ? 0.9 : 1.0,
         duration: const Duration(milliseconds: 80),

@@ -8,6 +8,15 @@ import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/virtual_controls.dart';
 import '../widgets/multiplayer_scoreboard.dart';
+import '../widgets/back_to_menu_button.dart';
+
+class _Obstacle {
+  final Offset pos;
+  final double radius;
+  final String emoji;
+
+  const _Obstacle({required this.pos, required this.radius, required this.emoji});
+}
 
 class SnakeChaseScreen extends StatefulWidget {
   const SnakeChaseScreen({super.key});
@@ -19,7 +28,9 @@ class SnakeChaseScreen extends StatefulWidget {
 class _SnakeChaseScreenState extends State<SnakeChaseScreen>
     with SingleTickerProviderStateMixin {
   static const int _surviveSeconds = 60;
-  static const double _catchRadius = 0.08; // normalized distance
+  static const double _catchRadius = 0.08;
+  static const double _obstacleRadius = 0.04;
+  static const List<String> _obstacleEmojis = ['🪨', '🌳', '🌿', '🪵'];
 
   late AnimationController _ticker;
   Offset _playerPos = const Offset(0.5, 0.5);
@@ -30,6 +41,7 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
   DateTime? _lastFrame;
   Timer? _countdownTimer;
   final Random _rng = Random();
+  late List<_Obstacle> _obstacles;
 
   double get _snakeSpeed {
     final elapsed = _surviveSeconds - _secondsLeft;
@@ -45,6 +57,7 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
     context.read<GameState>().resetForWorld();
 
     _snakePos = Offset(_rng.nextDouble() * 0.3, _rng.nextDouble() * 0.3);
+    _obstacles = _generateObstacles();
 
     _ticker = AnimationController(
       vsync: this,
@@ -57,6 +70,41 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
       setState(() => _secondsLeft--);
       if (_secondsLeft <= 0) _onWin();
     });
+  }
+
+  List<_Obstacle> _generateObstacles() {
+    final obstacles = <_Obstacle>[];
+    int attempts = 0;
+    final count = 8 + _rng.nextInt(5); // 8-12 obstacles
+
+    while (obstacles.length < count && attempts < 500) {
+      attempts++;
+      final pos = Offset(
+        0.08 + _rng.nextDouble() * 0.84,
+        0.12 + _rng.nextDouble() * 0.76,
+      );
+
+      // Must not be too close to player start
+      if ((pos - _playerPos).distance < 0.15) continue;
+      // Must not be too close to snake start
+      if ((pos - _snakePos).distance < 0.15) continue;
+      // Must not be too close to other obstacles
+      if (obstacles.any((o) => (o.pos - pos).distance < 0.10)) continue;
+
+      obstacles.add(_Obstacle(
+        pos: pos,
+        radius: _obstacleRadius,
+        emoji: _obstacleEmojis[_rng.nextInt(_obstacleEmojis.length)],
+      ));
+    }
+    return obstacles;
+  }
+
+  bool _collidesWithObstacle(Offset pos) {
+    for (final obs in _obstacles) {
+      if ((obs.pos - pos).distance < obs.radius + 0.03) return true;
+    }
+    return false;
   }
 
   @override
@@ -76,31 +124,63 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
         : 1.0;
     _lastFrame = now;
 
-    // Move player
+    // Move player (with obstacle collision)
     if (_moveDir != Offset.zero) {
       final speed = 0.006 * dt;
-      final newPos = _playerPos + _moveDir * speed;
-      _playerPos = Offset(
-        newPos.dx.clamp(0.02, 0.98),
-        newPos.dy.clamp(0.08, 0.92),
+      final newPos = Offset(
+        (_playerPos.dx + _moveDir.dx * speed).clamp(0.02, 0.98),
+        (_playerPos.dy + _moveDir.dy * speed).clamp(0.08, 0.92),
       );
+      if (!_collidesWithObstacle(newPos)) {
+        _playerPos = newPos;
+      } else {
+        // Try sliding along X only
+        final slideX = Offset(newPos.dx, _playerPos.dy);
+        if (!_collidesWithObstacle(slideX)) {
+          _playerPos = slideX;
+        } else {
+          // Try sliding along Y only
+          final slideY = Offset(_playerPos.dx, newPos.dy);
+          if (!_collidesWithObstacle(slideY)) {
+            _playerPos = slideY;
+          }
+          // If both blocked, don't move
+        }
+      }
     }
 
-    // Move snake toward player (steering AI)
+    // Move snake toward player (with obstacle avoidance)
     final toPlayer = _playerPos - _snakePos;
     final dist = toPlayer.distance;
     if (dist > 0.001) {
       final dir = toPlayer / dist;
-      _snakePos = _snakePos + dir * _snakeSpeed * dt;
+      var newSnakePos = _snakePos + dir * _snakeSpeed * dt;
+
+      if (_collidesWithObstacle(newSnakePos)) {
+        // Try perpendicular directions to go around
+        final perp1 = Offset(-dir.dy, dir.dx);
+        final perp2 = Offset(dir.dy, -dir.dx);
+        final alt1 = _snakePos + (dir + perp1 * 0.8).normalized() * _snakeSpeed * dt;
+        final alt2 = _snakePos + (dir + perp2 * 0.8).normalized() * _snakeSpeed * dt;
+
+        if (!_collidesWithObstacle(alt1)) {
+          newSnakePos = alt1;
+        } else if (!_collidesWithObstacle(alt2)) {
+          newSnakePos = alt2;
+        }
+        // If both blocked, snake doesn't move this frame
+      }
+
+      if (!_collidesWithObstacle(newSnakePos)) {
+        _snakePos = newSnakePos;
+      }
     }
 
     // Check catch
-    if (dist < _catchRadius) {
+    final catchDist = (_playerPos - _snakePos).distance;
+    if (catchDist < _catchRadius) {
       _onCaught();
-      return;
     }
-
-    setState(() {});
   }
 
   void _onCaught() async {
@@ -167,7 +247,7 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
               // Timer
               Positioned(
                 top: 12,
-                right: 16,
+                right: 60,
                 child: AnimatedDefaultTextStyle(
                   duration: const Duration(milliseconds: 300),
                   style: TextStyle(
@@ -178,6 +258,8 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
                   child: Text('⏱ $_secondsLeft s'),
                 ),
               ),
+
+              const BackToMenuButton(),
 
               // Instruction
               Positioned(
@@ -197,6 +279,24 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
                   ),
                 ),
               ),
+
+              // Obstacles
+              ..._obstacles.map((obs) => Positioned(
+                    left: obs.pos.dx * size.width - 22,
+                    top: obs.pos.dy * size.height - 22,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(obs.emoji, style: const TextStyle(fontSize: 36)),
+                    ),
+                  )),
 
               // Snake
               AnimatedBuilder(
@@ -239,8 +339,8 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
 
               // Virtual controls
               VirtualControls(
-                onMove: (dir) => setState(() => _moveDir = dir),
-                onRelease: () => setState(() => _moveDir = Offset.zero),
+                onMove: (dir) => _moveDir = dir,
+                onRelease: () => _moveDir = Offset.zero,
                 showJump: false,
               ),
             ],
@@ -248,5 +348,14 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
         ),
       ),
     );
+  }
+}
+
+// Extension to normalize Offset
+extension on Offset {
+  Offset normalized() {
+    final d = distance;
+    if (d == 0) return Offset.zero;
+    return this / d;
   }
 }

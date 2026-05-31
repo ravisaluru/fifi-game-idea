@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
 import '../widgets/bouncing_emoji.dart';
-import '../widgets/shimmer_button.dart';
+
 
 class WorldSelectScreen extends StatelessWidget {
   const WorldSelectScreen({super.key});
@@ -99,11 +99,11 @@ class WorldSelectScreen extends StatelessWidget {
                   itemBuilder: (context, i) {
                     final w = _worlds[i];
                     final done = state.completedWorlds.contains(w.id);
-                    return ShimmerButton(
-                      borderRadius: BorderRadius.circular(20),
+                    return GestureDetector(
                       onTap: () => Navigator.pushReplacementNamed(
                           context, '/world/${w.id.name}'),
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,

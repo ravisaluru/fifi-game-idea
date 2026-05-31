@@ -6,8 +6,9 @@ import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/particle_burst.dart';
+import '../widgets/back_to_menu_button.dart';
 
-enum _BubbleColor { red, yellow, blue, green, purple }
+enum _BubbleColor { red, yellow, blue, green, purple, orange, cyan }
 
 class _Bubble {
   final int id;
@@ -26,6 +27,8 @@ const Map<_BubbleColor, Color> _colorMap = {
   _BubbleColor.blue: Color(0xFF42A5F5),
   _BubbleColor.green: Color(0xFF66BB6A),
   _BubbleColor.purple: Color(0xFFAB47BC),
+  _BubbleColor.orange: Color(0xFFFF7043),
+  _BubbleColor.cyan: Color(0xFF26C6DA),
 };
 
 class BubbleWorldScreen extends StatefulWidget {
@@ -37,13 +40,25 @@ class BubbleWorldScreen extends StatefulWidget {
 
 class _BubbleWorldScreenState extends State<BubbleWorldScreen>
     with TickerProviderStateMixin {
-  static const int _pairs = 5;
-  late List<_Bubble> _bubbles;
+  static const int _maxLevel = 5;
+  // Pairs per level: 3, 4, 5, 6, 7
+  static const List<int> _pairsPerLevel = [3, 4, 5, 6, 7];
+  // Base duration per level (ms) — 20% slower than original at level 1,
+  // getting faster each level
+  static const List<int> _baseDurationPerLevel = [9600, 8400, 7200, 6000, 4800];
+
+  int _level = 1;
+  List<_Bubble> _bubbles = [];
   _Bubble? _selected;
   int _poppedPairs = 0;
   int _burstCount = 0;
   bool _showBurst = false;
   Color _burstColor = Colors.yellow;
+  bool _showLevelBanner = false;
+  String _levelBannerText = '';
+
+  int get _currentPairs => _pairsPerLevel[_level - 1];
+  int get _currentBaseDuration => _baseDurationPerLevel[_level - 1];
 
   @override
   void initState() {
@@ -53,9 +68,16 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   }
 
   void _initBubbles() {
+    // Dispose old controllers if any
+    if (_bubbles.isNotEmpty) {
+      for (final b in _bubbles) {
+        b.controller.dispose();
+      }
+    }
+
     final rng = Random();
     final colors = _BubbleColor.values.toList()..shuffle(rng);
-    final pairs = colors.take(_pairs).expand((c) => [c, c]).toList()
+    final pairs = colors.take(_currentPairs).expand((c) => [c, c]).toList()
       ..shuffle(rng);
 
     _bubbles = List.generate(pairs.length, (i) {
@@ -64,7 +86,8 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         color: pairs[i],
         x: 0.08 + rng.nextDouble() * 0.82,
       );
-      final duration = Duration(milliseconds: 6700 + rng.nextInt(5000));
+      final duration = Duration(
+          milliseconds: _currentBaseDuration + rng.nextInt(3000));
       final delay = rng.nextInt(2000);
       b.controller = AnimationController(vsync: this, duration: duration);
       Future.delayed(Duration(milliseconds: delay), () {
@@ -80,6 +103,9 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
       });
       return b;
     });
+
+    _selected = null;
+    _poppedPairs = 0;
   }
 
   @override
@@ -91,7 +117,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   }
 
   void _onBubbleTap(_Bubble tapped) {
-    if (tapped.isPopped) return;
+    if (tapped.isPopped || _showLevelBanner) return;
     final state = context.read<GameState>();
 
     if (_selected == null) {
@@ -105,13 +131,14 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         _selected = null;
       });
     } else if (_selected!.color == tapped.color) {
+      // Match found — stop controllers for popped bubbles
+      _selected!.controller.stop();
+      tapped.controller.stop();
       setState(() {
         _selected!.isPopped = true;
         tapped.isPopped = true;
         _selected = null;
         _poppedPairs++;
-      });
-      setState(() {
         _burstCount++;
         _burstColor = _colorMap[tapped.color]!;
         _showBurst = true;
@@ -119,7 +146,9 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
       Future.delayed(const Duration(milliseconds: 600), () {
         if (mounted) setState(() => _showBurst = false);
       });
-      if (_poppedPairs >= _pairs) _onWin();
+      if (_poppedPairs >= _currentPairs) {
+        _onLevelComplete();
+      }
     } else {
       setState(() {
         _selected!.isSelected = false;
@@ -128,6 +157,33 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
       state.loseLife();
       if (state.lives <= 0) _onLose();
     }
+  }
+
+  void _onLevelComplete() {
+    if (_level >= _maxLevel) {
+      _onWin();
+      return;
+    }
+
+    // Show level banner then advance
+    setState(() {
+      _showLevelBanner = true;
+      _levelBannerText = 'Level $_level Complete! 🎉';
+    });
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+      // Dispose old bubble controllers
+      for (final b in _bubbles) {
+        b.controller.dispose();
+      }
+      setState(() {
+        _level++;
+        _showLevelBanner = false;
+      });
+      _initBubbles();
+      setState(() {});
+    });
   }
 
   void _onWin() {
@@ -158,11 +214,25 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
                   top: 12, left: 16, child: LivesHud(lives: state.lives)),
               Positioned(
                 top: 12,
-                right: 16,
-                child: Text('Pop matching pairs!',
-                    style:
-                        const TextStyle(color: Colors.white70, fontSize: 13)),
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      'Level $_level / $_maxLevel  •  Pop matching pairs!',
+                      style: const TextStyle(
+                          color: Colors.white, fontSize: 14),
+                    ),
+                  ),
+                ),
               ),
+              const BackToMenuButton(),
               ..._bubbles.where((b) => !b.isPopped).map((b) {
                 return AnimatedBuilder(
                   animation: b.controller,
@@ -195,6 +265,26 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
                       key: ValueKey(_burstCount),
                       color: _burstColor,
                       particleCount: 12,
+                    ),
+                  ),
+                ),
+              // Level transition banner
+              if (_showLevelBanner)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    child: Center(
+                      child: Text(
+                        _levelBannerText,
+                        style: const TextStyle(
+                          color: Colors.yellow,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(blurRadius: 12, color: Colors.black54)
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),

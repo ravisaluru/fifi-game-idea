@@ -33,6 +33,8 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
   late AnimationController _driftController;
   late List<_DriftBlob> _driftBlobs;
   late List<_RiverParticle> _riverParticles;
+  late List<Offset> _starPositions;
+  late List<double> _starSizes;
 
   @override
   void initState() {
@@ -53,7 +55,10 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
     _rainController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
-    )..repeat();
+    );
+    if (_weather == WeatherType.lightRain) {
+      _rainController.repeat();
+    }
 
     _clouds = List.generate(
         4,
@@ -72,6 +77,26 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
               length: 8 + _rng.nextDouble() * 12,
               speed: 0.015 + _rng.nextDouble() * 0.01,
             ));
+
+    // Cache star positions so _StarsPainter doesn't recreate Random every frame
+    final starRng = Random(7);
+    _starPositions = List.generate(
+        30, (i) => Offset(starRng.nextDouble(), starRng.nextDouble()));
+    _starSizes = List.generate(30, (i) => 1.5 + starRng.nextDouble() * 1.5);
+
+    // Move cloud/rain position mutations into animation listeners
+    _cloudController.addListener(() {
+      for (final c in _clouds) {
+        c.x = (c.x + c.speed * _cloudController.value * 0.05) % 1.2;
+      }
+    });
+    _rainController.addListener(() {
+      if (_weather == WeatherType.lightRain) {
+        for (final r in _rainDrops) {
+          r.y = (r.y + r.speed) % 1.1;
+        }
+      }
+    });
 
     _trees = List.generate(
         6,
@@ -175,16 +200,6 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
           _driftController,
         ]),
         builder: (context, _) {
-          // Update cloud positions
-          for (final c in _clouds) {
-            c.x = (c.x + c.speed * _cloudController.value * 0.05) % 1.2;
-          }
-          // Update rain drops
-          if (_weather == WeatherType.lightRain) {
-            for (final r in _rainDrops) {
-              r.y = (r.y + r.speed) % 1.1;
-            }
-          }
 
           return Stack(
             children: [
@@ -267,7 +282,11 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
               if (widget.theme == BackgroundTheme.night)
                 CustomPaint(
                   size: Size(w, h * 0.6),
-                  painter: _StarsPainter(pulse: _grassController.value),
+                  painter: _StarsPainter(
+                    pulse: _grassController.value,
+                    positions: _starPositions,
+                    sizes: _starSizes,
+                  ),
                 ),
 
               // Drifting cloud blobs (meadow / grassland only)
@@ -317,7 +336,7 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
                 }),
 
               // Game content on top
-              widget.child,
+              RepaintBoundary(child: widget.child),
             ],
           );
         },
@@ -387,7 +406,7 @@ class _GrassPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
 
     final rng = Random(42); // fixed seed for consistent blade positions
-    for (int i = 0; i < 60; i++) {
+    for (int i = 0; i < 30; i++) {
       final x = rng.nextDouble() * size.width;
       final bladeHeight = 8 + rng.nextDouble() * 12;
       final sway = sin(swayValue * pi + i * 0.7) * 3;
@@ -550,18 +569,19 @@ class _RainPainter extends CustomPainter {
 
 class _StarsPainter extends CustomPainter {
   final double pulse;
-  _StarsPainter({required this.pulse});
+  final List<Offset> positions;
+  final List<double> sizes;
+  _StarsPainter({required this.pulse, required this.positions, required this.sizes});
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rng = Random(7);
-    for (int i = 0; i < 30; i++) {
-      final x = rng.nextDouble() * size.width;
-      final y = rng.nextDouble() * size.height;
+    for (int i = 0; i < positions.length; i++) {
+      final x = positions[i].dx * size.width;
+      final y = positions[i].dy * size.height;
       final opacity = 0.4 + sin(pulse * pi + i) * 0.3;
       canvas.drawCircle(
         Offset(x, y),
-        1.5 + rng.nextDouble() * 1.5,
+        sizes[i],
         Paint()
           ..color = Colors.white.withValues(alpha: opacity.clamp(0.1, 0.9)),
       );

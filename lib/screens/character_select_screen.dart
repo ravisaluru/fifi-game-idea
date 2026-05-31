@@ -74,7 +74,8 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
           ),
         ),
         child: SafeArea(
-          child: Column(
+          child: SingleChildScrollView(
+            child: Column(
             children: [
               const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
@@ -249,7 +250,7 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
                 }).toList(),
               ),
 
-              const Spacer(),
+              const SizedBox(height: 32),
 
               // Let's Go button
               Padding(
@@ -286,6 +287,7 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),

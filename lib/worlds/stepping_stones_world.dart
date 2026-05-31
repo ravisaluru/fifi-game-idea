@@ -7,6 +7,7 @@ import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/particle_burst.dart';
+import '../widgets/back_to_menu_button.dart';
 
 class SteppingStonesScreen extends StatefulWidget {
   const SteppingStonesScreen({super.key});
@@ -17,12 +18,16 @@ class SteppingStonesScreen extends StatefulWidget {
 
 class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     with TickerProviderStateMixin {
-  static const int _stoneCount = 12;
+  static const int _maxLevel = 3;
+  static const List<int> _stonesPerLevel = [6, 10, 15];
+
+  int _level = 1;
+  int get _stoneCount => _stonesPerLevel[_level - 1];
 
   List<Offset> _stonePositions = [];
   Size? _lastSize;
   late List<int> _sequence;
-  late List<AnimationController> _glowControllers;
+  List<AnimationController> _glowControllers = [];
   int _playerStep = 0;
   int _playerStoneIndex = -1;
   bool _isShowingSequence = false;
@@ -31,12 +36,27 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
   int _burstCount = 0;
   bool _showBurst = false;
   Offset _burstPosition = Offset.zero;
+  bool _showLevelBanner = false;
+  String _levelBannerText = '';
 
   @override
   void initState() {
     super.initState();
     context.read<GameState>().resetForWorld();
+    _initLevel();
+  }
+
+  void _initLevel() {
     _seed = DateTime.now().millisecondsSinceEpoch;
+    _stonePositions = [];
+    _lastSize = null;
+    _playerStep = 0;
+    _playerStoneIndex = -1;
+
+    // Dispose old glow controllers
+    for (final c in _glowControllers) {
+      c.dispose();
+    }
 
     _glowControllers = List.generate(
         _stoneCount,
@@ -96,7 +116,7 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
   }
 
   void _onStoneTap(int stoneIndex) {
-    if (!_playerCanTap) return;
+    if (!_playerCanTap || _showLevelBanner) return;
     final state = context.read<GameState>();
 
     _glowControllers[stoneIndex].forward(from: 0).then((_) {
@@ -109,8 +129,6 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
       setState(() {
         _playerStoneIndex = stoneIndex;
         _playerStep++;
-      });
-      setState(() {
         _burstCount++;
         _burstPosition = _stonePositions[stoneIndex];
         _showBurst = true;
@@ -119,7 +137,7 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
         if (mounted) setState(() => _showBurst = false);
       });
       if (_playerStep >= _stoneCount) {
-        Future.delayed(const Duration(milliseconds: 500), _onWin);
+        Future.delayed(const Duration(milliseconds: 500), _onLevelComplete);
       }
     } else {
       state.loseLife();
@@ -133,6 +151,28 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
       }
       Future.delayed(const Duration(milliseconds: 800), _showSequence);
     }
+  }
+
+  void _onLevelComplete() {
+    if (_level >= _maxLevel) {
+      _onWin();
+      return;
+    }
+
+    setState(() {
+      _showLevelBanner = true;
+      _levelBannerText = 'Level $_level Complete! 🎉';
+    });
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+      setState(() {
+        _level++;
+        _showLevelBanner = false;
+      });
+      _initLevel();
+      setState(() {});
+    });
   }
 
   void _onWin() {
@@ -171,18 +211,32 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: Text(
-                    _isShowingSequence
-                        ? 'Remember the path...'
-                        : 'Hop the right stones!',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Column(
+                    children: [
+                      Text(
+                        'Level $_level / $_maxLevel',
+                        style: const TextStyle(
+                          color: Colors.yellow,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        _isShowingSequence
+                            ? 'Remember the path...'
+                            : 'Hop the right stones!',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
+              const BackToMenuButton(),
               Positioned(
                 left: 8,
                 top: size.height * 0.3,
@@ -273,6 +327,26 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
                       key: ValueKey(_burstCount),
                       color: Colors.amber,
                       particleCount: 10,
+                    ),
+                  ),
+                ),
+              // Level transition banner
+              if (_showLevelBanner)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    child: Center(
+                      child: Text(
+                        _levelBannerText,
+                        style: const TextStyle(
+                          color: Colors.yellow,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(blurRadius: 12, color: Colors.black54)
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),

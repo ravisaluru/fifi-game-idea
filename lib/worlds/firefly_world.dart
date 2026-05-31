@@ -6,6 +6,7 @@ import '../models/game_state.dart';
 import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
+import '../widgets/back_to_menu_button.dart';
 
 class FireflyWorldScreen extends StatefulWidget {
   const FireflyWorldScreen({super.key});
@@ -168,12 +169,13 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
               ),
               Positioned(
                 top: 12,
-                right: 16,
+                right: 60,
                 child: Text(
                   'Round ${_roundsWon + 1}/$_winsNeeded',
                   style: const TextStyle(color: Colors.white70, fontSize: 16),
                 ),
               ),
+              const BackToMenuButton(),
 
               // Instruction
               Positioned(

@@ -209,7 +209,7 @@ class _VictoryScreenState extends State<VictoryScreen>
                     color: Colors.white.withValues(alpha: 0.2),
                     textColor: Colors.white,
                     onTap: () =>
-                        Navigator.popUntil(context, ModalRoute.withName('/')),
+                        Navigator.pushReplacementNamed(context, '/world-select'),
                   ),
                 ],
               ),

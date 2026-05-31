@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../models/game_state.dart';
 import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
+import '../widgets/back_to_menu_button.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/virtual_controls.dart';
 import '../widgets/multiplayer_scoreboard.dart';
@@ -26,7 +27,8 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
       _tigerState == _TigerState.turningAround;
 
   double _playerProgress = 0.0;
-  static const double _stepSize = 0.08;
+  static const double _stepSize = 0.03;
+  bool _moveCooldown = false;
 
   Timer? _stateTimer;
   bool _wasCaught = false;
@@ -119,7 +121,11 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
   }
 
   void _onMoveInput() {
-    if (_isWatching || _wasCaught) return;
+    if (_isWatching || _wasCaught || _moveCooldown) return;
+    _moveCooldown = true;
+    Future.delayed(const Duration(milliseconds: 200), () {
+      if (mounted) setState(() => _moveCooldown = false);
+    });
     setState(() => _playerProgress = (_playerProgress + _stepSize).clamp(0, 1));
     _bobController.forward(from: 0);
     if (_playerProgress >= 1.0) {
@@ -150,7 +156,7 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
         context.read<GameState>(); // ignore: use_build_context_synchronously
     state.loseLife();
     setState(() {
-      _playerProgress = max(0, _playerProgress - _stepSize * 2);
+      _playerProgress = max(0, _playerProgress - _stepSize * 3);
       _wasCaught = false;
     });
 
@@ -194,6 +200,7 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
               children: [
                 Positioned(
                     top: 12, left: 16, child: LivesHud(lives: state.lives)),
+                const BackToMenuButton(),
                 Positioned(
                   top: 56,
                   left: 0,
@@ -261,7 +268,7 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                       left: playerX + _shakeAnim.value - 24,
                       top: size.height * 0.30 + bob,
                       child: Text(
-                        _wasCaught ? '😱' : '🏃',
+                        _wasCaught ? '😱' : context.read<GameState>().selectedCharacter?.emoji ?? '🏃',
                         style: const TextStyle(fontSize: 48),
                       ),
                     );
