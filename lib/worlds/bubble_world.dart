@@ -174,16 +174,20 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
 
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (!mounted) return;
-      // Dispose old bubble controllers
-      for (final b in _bubbles) {
-        b.controller.dispose();
-      }
+      
+      // Store reference to old bubbles to dispose them after rebuild
+      final oldBubbles = List<_Bubble>.from(_bubbles);
+      
       setState(() {
         _level++;
         _showLevelBanner = false;
+        _initBubbles();
       });
-      _initBubbles();
-      setState(() {});
+      
+      // Safely dispose old controllers now that they are no longer in the active widget tree
+      for (final b in oldBubbles) {
+        b.controller.dispose();
+      }
     });
   }
 
