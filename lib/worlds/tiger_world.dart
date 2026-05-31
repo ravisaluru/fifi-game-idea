@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
-import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/back_to_menu_button.dart';
+import '../widgets/victory_popup.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/virtual_controls.dart';
 import '../widgets/multiplayer_scoreboard.dart';
@@ -166,16 +166,15 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
   }
 
   void _onWin() {
+    _stateTimer?.cancel();
     context.read<GameState>().completeWorld(WorldId.tiger);
-    context.read<GameState>().addCoins(5);
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(
-            didWin: true, coinsEarned: 5, worldName: 'Tiger Plains'));
+    context.read<GameState>().addCoins(10);
+    VictoryPopup.show(context, didWin: true, coinsEarned: 10, worldName: 'Tiger Forest');
   }
 
   void _onLose() {
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(didWin: false, worldName: 'Tiger Plains'));
+    _stateTimer?.cancel();
+    VictoryPopup.show(context, didWin: false, worldName: 'Tiger Forest');
   }
 
   @override

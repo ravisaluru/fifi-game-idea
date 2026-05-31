@@ -2,11 +2,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
-import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/particle_burst.dart';
 import '../widgets/back_to_menu_button.dart';
+import '../widgets/victory_popup.dart';
 
 enum _BubbleColor { red, yellow, blue, green, purple, orange, cyan }
 
@@ -41,8 +41,8 @@ class BubbleWorldScreen extends StatefulWidget {
 class _BubbleWorldScreenState extends State<BubbleWorldScreen>
     with TickerProviderStateMixin {
   static const int _maxLevel = 5;
-  // Pairs per level: 3, 4, 5, 6, 7
-  static const List<int> _pairsPerLevel = [3, 4, 5, 6, 7];
+  // Pairs double per level: 2, 4, 8, 16, 32
+  static const List<int> _pairsPerLevel = [2, 4, 8, 16, 32];
   // Base duration per level (ms) — 20% slower than original at level 1,
   // getting faster each level
   static const List<int> _baseDurationPerLevel = [9600, 8400, 7200, 6000, 4800];
@@ -69,16 +69,17 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
 
   void _initBubbles() {
     // Dispose old controllers if any
-    if (_bubbles.isNotEmpty) {
-      for (final b in _bubbles) {
-        b.controller.dispose();
-      }
-    }
+    // Double-dispose was causing Level 2 to crash. Just clear the list!
+    // Disposing happens in `_onLevelComplete`.
 
     final rng = Random();
-    final colors = _BubbleColor.values.toList()..shuffle(rng);
-    final pairs = colors.take(_currentPairs).expand((c) => [c, c]).toList()
-      ..shuffle(rng);
+    final pairs = <_BubbleColor>[];
+    for (int i = 0; i < _currentPairs; i++) {
+      final c = _BubbleColor.values[rng.nextInt(_BubbleColor.values.length)];
+      pairs.add(c);
+      pairs.add(c);
+    }
+    pairs.shuffle(rng);
 
     _bubbles = List.generate(pairs.length, (i) {
       final b = _Bubble(
@@ -189,14 +190,11 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   void _onWin() {
     context.read<GameState>().completeWorld(WorldId.bubble);
     context.read<GameState>().addCoins(5);
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(
-            didWin: true, coinsEarned: 5, worldName: 'Bubble Sky'));
+    VictoryPopup.show(context, didWin: true, coinsEarned: 5, worldName: 'Bubble Sky');
   }
 
   void _onLose() {
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(didWin: false, worldName: 'Bubble Sky'));
+    VictoryPopup.show(context, didWin: false, worldName: 'Bubble Sky');
   }
 
   @override

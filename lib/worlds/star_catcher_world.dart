@@ -3,11 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
-import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/particle_burst.dart';
 import '../widgets/back_to_menu_button.dart';
+import '../widgets/victory_popup.dart';
 
 class _FallingStar {
   final int id;
@@ -54,8 +54,8 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
   // Level definitions
   int _level = 1;
   static const List<int> _levelThresholds = [7, 14, 20]; // points to complete each level
-  static const List<double> _levelBaseDy = [0.002, 0.003, 0.004];
-  static const List<double> _levelGravity = [0.00015, 0.00025, 0.00035];
+  static const List<double> _levelBaseDy = [0.001, 0.0015, 0.002];
+  static const List<double> _levelGravity = [0.00008, 0.00012, 0.00018];
   static const List<int> _levelSpawnMs = [1200, 1000, 800];
   static const List<int> _levelMaxStars = [15, 18, 22];
 
@@ -129,10 +129,12 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
 
       if (star.y > 1.05) {
         toRemove.add(star);
-        state.loseLife();
-        if (state.lives <= 0) {
-          Future.microtask(_onLose);
-          return;
+        if (!_showLevelBanner) {
+          state.loseLife();
+          if (state.lives <= 0) {
+            Future.microtask(_onLose);
+            return;
+          }
         }
       }
     }
@@ -158,6 +160,7 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
       if (mounted) setState(() => _showBurst = false);
     });
 
+    if (_showLevelBanner) return; // Prevent double trigger
     // Check level transition
     if (_caught >= _target) {
       _onWin();
@@ -188,15 +191,12 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
     _spawnTimer?.cancel();
     context.read<GameState>().completeWorld(WorldId.star);
     context.read<GameState>().addCoins(5);
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(
-            didWin: true, coinsEarned: 5, worldName: 'Star Shower'));
+    VictoryPopup.show(context, didWin: true, coinsEarned: 5, worldName: 'Star Shower');
   }
 
   void _onLose() {
     _spawnTimer?.cancel();
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(didWin: false, worldName: 'Star Shower'));
+    VictoryPopup.show(context, didWin: false, worldName: 'Star Shower');
   }
 
   @override
@@ -258,10 +258,17 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
                                   star,
                                   Offset(star.x * size.width,
                                       star.y * size.height)),
-                              child: Transform.rotate(
-                                angle: star.rotation,
-                                child: const Text('⭐',
-                                    style: TextStyle(fontSize: 44)),
+                              child: Container(
+                                color: Colors.transparent,
+                                width: 80,
+                                height: 80,
+                                child: Center(
+                                  child: Transform.rotate(
+                                    angle: star.rotation,
+                                    child: const Text('⭐',
+                                        style: TextStyle(fontSize: 44)),
+                                  ),
+                                ),
                               ),
                             ),
                           ))

@@ -6,7 +6,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'models/game_state.dart';
 import 'screens/home_screen.dart';
 import 'screens/character_select_screen.dart';
-import 'screens/victory_screen.dart';
 import 'screens/multiplayer_menu_screen.dart';
 import 'screens/ai_setup_screen.dart';
 import 'screens/lobby_screen.dart';
@@ -70,7 +69,6 @@ class FifiApp extends StatelessWidget {
         routes: {
           '/': (_) => const HomeScreen(),
           '/character': (_) => const CharacterSelectScreen(),
-          '/victory': (_) => const VictoryScreen(),
           '/multiplayer': (_) => const MultiplayerMenuScreen(),
           '/ai-setup': (_) => const AiSetupScreen(),
           '/lobby': (_) => LobbyScreen(firebaseAvailable: firebaseAvailable),

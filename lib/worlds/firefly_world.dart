@@ -3,10 +3,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
-import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/back_to_menu_button.dart';
+import '../widgets/victory_popup.dart';
 
 class FireflyWorldScreen extends StatefulWidget {
   const FireflyWorldScreen({super.key});
@@ -125,20 +125,11 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
   void _onWin() {
     context.read<GameState>().completeWorld(WorldId.firefly);
     context.read<GameState>().addCoins(5);
-    Navigator.pushReplacementNamed(
-      context,
-      '/victory',
-      arguments: const VictoryArgs(
-          didWin: true, coinsEarned: 5, worldName: 'Firefly Forest'),
-    );
+    VictoryPopup.show(context, didWin: true, coinsEarned: 5, worldName: 'Firefly Night');
   }
 
   void _onLose() {
-    Navigator.pushReplacementNamed(
-      context,
-      '/victory',
-      arguments: const VictoryArgs(didWin: false, worldName: 'Firefly Forest'),
-    );
+    VictoryPopup.show(context, didWin: false, worldName: 'Firefly Night');
   }
 
   @override

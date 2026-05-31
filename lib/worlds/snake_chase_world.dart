@@ -3,12 +3,12 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
-import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/virtual_controls.dart';
 import '../widgets/multiplayer_scoreboard.dart';
 import '../widgets/back_to_menu_button.dart';
+import '../widgets/victory_popup.dart';
 
 class _Obstacle {
   final Offset pos;
@@ -67,7 +67,13 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
 
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() => _secondsLeft--);
+      setState(() {
+        _secondsLeft--;
+        // Randomize obstacles every 15 seconds
+        if (_secondsLeft % 15 == 0 && _secondsLeft > 0 && _secondsLeft < _surviveSeconds) {
+          _obstacles = _generateObstacles();
+        }
+      });
       if (_secondsLeft <= 0) _onWin();
     });
   }
@@ -156,24 +162,8 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
       final dir = toPlayer / dist;
       var newSnakePos = _snakePos + dir * _snakeSpeed * dt;
 
-      if (_collidesWithObstacle(newSnakePos)) {
-        // Try perpendicular directions to go around
-        final perp1 = Offset(-dir.dy, dir.dx);
-        final perp2 = Offset(dir.dy, -dir.dx);
-        final alt1 = _snakePos + (dir + perp1 * 0.8).normalized() * _snakeSpeed * dt;
-        final alt2 = _snakePos + (dir + perp2 * 0.8).normalized() * _snakeSpeed * dt;
-
-        if (!_collidesWithObstacle(alt1)) {
-          newSnakePos = alt1;
-        } else if (!_collidesWithObstacle(alt2)) {
-          newSnakePos = alt2;
-        }
-        // If both blocked, snake doesn't move this frame
-      }
-
-      if (!_collidesWithObstacle(newSnakePos)) {
-        _snakePos = newSnakePos;
-      }
+      // Snake is a ghost, passes through obstacles!
+      _snakePos = newSnakePos;
     }
 
     // Check catch
@@ -216,16 +206,12 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
     _countdownTimer?.cancel();
     context.read<GameState>().completeWorld(WorldId.snake);
     context.read<GameState>().addCoins(8);
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(
-            didWin: true, coinsEarned: 8, worldName: 'Snake Grassland'));
+    VictoryPopup.show(context, didWin: true, coinsEarned: 8, worldName: 'Snake Grassland');
   }
 
   void _onLose() {
     _countdownTimer?.cancel();
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments:
-            const VictoryArgs(didWin: false, worldName: 'Snake Grassland'));
+    VictoryPopup.show(context, didWin: false, worldName: 'Snake Grassland');
   }
 
   @override
@@ -351,11 +337,4 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
   }
 }
 
-// Extension to normalize Offset
-extension on Offset {
-  Offset normalized() {
-    final d = distance;
-    if (d == 0) return Offset.zero;
-    return this / d;
-  }
-}
+

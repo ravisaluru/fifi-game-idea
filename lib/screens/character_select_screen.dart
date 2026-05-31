@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/character.dart';
 import '../models/game_state.dart';
-import '../widgets/shimmer_button.dart';
 
 class CharacterSelectScreen extends StatefulWidget {
   const CharacterSelectScreen({super.key});
@@ -255,7 +254,7 @@ class _CharacterSelectScreenState extends State<CharacterSelectScreen>
               // Let's Go button
               Padding(
                 padding: const EdgeInsets.only(bottom: 32),
-                child: ShimmerButton(
+                child: GestureDetector(
                   onTap: () => _confirm(context),
                   child: Container(
                     width: 200,

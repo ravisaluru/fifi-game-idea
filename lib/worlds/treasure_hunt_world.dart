@@ -3,9 +3,9 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
-import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/back_to_menu_button.dart';
+import '../widgets/victory_popup.dart';
 
 class _CoverSpot {
   final int id;
@@ -159,12 +159,7 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
     }
     context.read<GameState>().addCoins(_playerCoins);
 
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments: VictoryArgs(
-          didWin: didWin,
-          coinsEarned: _playerCoins,
-          worldName: 'Forest Treasure Hunt',
-        ));
+    VictoryPopup.show(context, didWin: didWin, coinsEarned: _playerCoins, worldName: 'Forest Treasure Hunt');
   }
 
   @override

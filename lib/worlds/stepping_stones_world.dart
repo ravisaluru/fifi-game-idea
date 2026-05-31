@@ -3,11 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
-import '../screens/victory_screen.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/particle_burst.dart';
 import '../widgets/back_to_menu_button.dart';
+import '../widgets/victory_popup.dart';
 
 class SteppingStonesScreen extends StatefulWidget {
   const SteppingStonesScreen({super.key});
@@ -178,15 +178,11 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
   void _onWin() {
     context.read<GameState>().completeWorld(WorldId.stones);
     context.read<GameState>().addCoins(5);
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments: const VictoryArgs(
-            didWin: true, coinsEarned: 5, worldName: 'Stepping Stones'));
+    VictoryPopup.show(context, didWin: true, coinsEarned: 5, worldName: 'Stepping Stones');
   }
 
   void _onLose() {
-    Navigator.pushReplacementNamed(context, '/victory',
-        arguments:
-            const VictoryArgs(didWin: false, worldName: 'Stepping Stones'));
+    VictoryPopup.show(context, didWin: false, worldName: 'Stepping Stones');
   }
 
   @override
