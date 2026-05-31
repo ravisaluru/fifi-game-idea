@@ -42,6 +42,7 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
   Timer? _countdownTimer;
   final Random _rng = Random();
   late List<_Obstacle> _obstacles;
+  Size _screenSize = Size.zero;
 
   double get _snakeSpeed {
     final elapsed = _surviveSeconds - _secondsLeft;
@@ -107,8 +108,11 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
   }
 
   bool _collidesWithObstacle(Offset pos) {
+    if (_screenSize == Size.zero) return false;
     for (final obs in _obstacles) {
-      if ((obs.pos - pos).distance < obs.radius + 0.03) return true;
+      final obsPixel = Offset(obs.pos.dx * _screenSize.width, obs.pos.dy * _screenSize.height);
+      final posPixel = Offset(pos.dx * _screenSize.width, pos.dy * _screenSize.height);
+      if ((obsPixel - posPixel).distance < 28.0) return true;
     }
     return false;
   }
@@ -218,6 +222,7 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
   Widget build(BuildContext context) {
     final state = context.watch<GameState>();
     final size = MediaQuery.of(context).size;
+    _screenSize = size;
 
     final timerColor = _secondsLeft <= 10 ? Colors.red : Colors.white;
 
