@@ -65,67 +65,6 @@ class FifiApp extends StatelessWidget {
           fontFamily: 'FifiRounded',
           useMaterial3: true,
         ),
-        builder: (context, child) {
-          if (child == null) return const SizedBox.shrink();
-          return Scaffold(
-            backgroundColor: const Color(0xFF0F172A),
-            body: LayoutBuilder(
-              builder: (context, constraints) {
-                if (constraints.maxWidth > 500) {
-                  const targetWidth = 480.0;
-                  final targetHeight = constraints.maxHeight - 48.0;
-                  return Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
-                      ),
-                    ),
-                    child: Center(
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 24),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(28),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFF7B1FA2).withValues(alpha: 0.35),
-                              blurRadius: 40,
-                              spreadRadius: 2,
-                            ),
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.45),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                          border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.18),
-                            width: 2.0,
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(26),
-                          child: SizedBox(
-                            width: targetWidth,
-                            height: targetHeight,
-                            child: MediaQuery(
-                              data: MediaQuery.of(context).copyWith(
-                                size: Size(targetWidth, targetHeight),
-                              ),
-                              child: child,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return child;
-              },
-            ),
-          );
-        },
         initialRoute: '/',
         routes: {
           '/': (_) => const HomeScreen(),

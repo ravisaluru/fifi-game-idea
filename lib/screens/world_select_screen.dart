@@ -87,69 +87,78 @@ class WorldSelectScreen extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.all(12),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.1,
-                  ),
-                  itemCount: _worlds.length,
-                  itemBuilder: (context, i) {
-                    final w = _worlds[i];
-                    final done = state.completedWorlds.contains(w.id);
-                    return GestureDetector(
-                      onTap: () => Navigator.pushReplacementNamed(
-                          context, '/world/${w.id.name}'),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: w.gradient,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          border: done
-                              ? Border.all(color: Colors.yellow, width: 2.5)
-                              : null,
-                        ),
-                        child: Stack(
-                          children: [
-                            Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  SizedBox(
-                                    height: 60,
-                                    child: Center(
-                                      child: WorldGamePreview(id: w.id),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    w.name,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (done)
-                              const Positioned(
-                                top: 8,
-                                right: 10,
-                                child:
-                                    Text('⭐', style: TextStyle(fontSize: 20)),
-                              ),
-                          ],
-                        ),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final screenWidth = constraints.maxWidth;
+                    // Dynamically calculate columns based on card width
+                    final crossAxisCount = (screenWidth / 185).floor().clamp(2, 6);
+                    final childAspectRatio = screenWidth < 500 ? 1.1 : 1.25;
+
+                    return GridView.builder(
+                      padding: const EdgeInsets.all(12),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: crossAxisCount,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                        childAspectRatio: childAspectRatio,
                       ),
+                      itemCount: _worlds.length,
+                      itemBuilder: (context, i) {
+                        final w = _worlds[i];
+                        final done = state.completedWorlds.contains(w.id);
+                        return GestureDetector(
+                          onTap: () => Navigator.pushReplacementNamed(
+                              context, '/world/${w.id.name}'),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 150),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: w.gradient,
+                              ),
+                              borderRadius: BorderRadius.circular(20),
+                              border: done
+                                  ? Border.all(color: Colors.yellow, width: 2.5)
+                                  : null,
+                            ),
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SizedBox(
+                                        height: 60,
+                                        child: Center(
+                                          child: WorldGamePreview(id: w.id),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        w.name,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (done)
+                                  const Positioned(
+                                    top: 8,
+                                    right: 10,
+                                    child:
+                                        Text('⭐', style: TextStyle(fontSize: 20)),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     );
                   },
                 ),
