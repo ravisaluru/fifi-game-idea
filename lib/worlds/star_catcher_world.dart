@@ -52,11 +52,10 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
 
   // Level definitions
   int _level = 1;
-  static const List<int> _levelTargets = [7, 7, 6]; // targets for each level
+  static const List<int> _levelTargets = [20, 20, 20]; // targets for each level (20 stars per level)
   static const List<double> _levelBaseDy = [0.001, 0.0015, 0.002];
   static const List<double> _levelGravity = [0.00008, 0.00012, 0.00018];
   static const List<int> _levelSpawnMs = [1200, 1000, 800];
-  static const List<int> _levelMaxStars = [15, 18, 22];
 
   double get _currentGravity => _levelGravity[_level - 1];
 
@@ -79,7 +78,7 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
     _spawnTimer = Timer.periodic(
       Duration(milliseconds: _levelSpawnMs[_level - 1]),
       (_) {
-        if (_spawned < _levelMaxStars[_level - 1] && mounted) _spawnStar();
+        if (mounted) _spawnStar();
       },
     );
   }
