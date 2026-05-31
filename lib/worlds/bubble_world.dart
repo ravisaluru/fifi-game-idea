@@ -8,11 +8,9 @@ import '../widgets/particle_burst.dart';
 import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
 
-enum _BubbleColor { red, yellow, blue, green, purple, orange, cyan }
-
 class _Bubble {
   final int id;
-  final _BubbleColor color;
+  final Color color;
   double x;
   bool isPopped = false;
   bool isSelected = false;
@@ -20,16 +18,6 @@ class _Bubble {
 
   _Bubble({required this.id, required this.color, required this.x});
 }
-
-const Map<_BubbleColor, Color> _colorMap = {
-  _BubbleColor.red: Color(0xFFEF5350),
-  _BubbleColor.yellow: Color(0xFFFFEE58),
-  _BubbleColor.blue: Color(0xFF42A5F5),
-  _BubbleColor.green: Color(0xFF66BB6A),
-  _BubbleColor.purple: Color(0xFFAB47BC),
-  _BubbleColor.orange: Color(0xFFFF7043),
-  _BubbleColor.cyan: Color(0xFF26C6DA),
-};
 
 class BubbleWorldScreen extends StatefulWidget {
   const BubbleWorldScreen({super.key});
@@ -43,9 +31,8 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   static const int _maxLevel = 5;
   // Pairs double per level: 2, 4, 8, 16, 32
   static const List<int> _pairsPerLevel = [2, 4, 8, 16, 32];
-  // Base duration per level (ms) — 20% slower than original at level 1,
-  // getting faster each level
-  static const List<int> _baseDurationPerLevel = [9600, 8400, 7200, 6000, 4800];
+  // Constant base duration (ms) for all levels (slow and steady)
+  static const int _baseDuration = 9600;
 
   int _level = 1;
   List<_Bubble> _bubbles = [];
@@ -58,7 +45,6 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   String _levelBannerText = '';
 
   int get _currentPairs => _pairsPerLevel[_level - 1];
-  int get _currentBaseDuration => _baseDurationPerLevel[_level - 1];
 
   @override
   void initState() {
@@ -68,16 +54,18 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   }
 
   void _initBubbles() {
-    // Dispose old controllers if any
-    // Double-dispose was causing Level 2 to crash. Just clear the list!
-    // Disposing happens in `_onLevelComplete`.
-
     final rng = Random();
-    final pairs = <_BubbleColor>[];
-    for (int i = 0; i < _currentPairs; i++) {
-      final c = _BubbleColor.values[rng.nextInt(_BubbleColor.values.length)];
-      pairs.add(c);
-      pairs.add(c);
+    
+    // Generate unique colors for the pairs by distributing hue in HSL space
+    final uniqueColors = List<Color>.generate(_currentPairs, (i) {
+      final hue = (i * 360.0 / _currentPairs) % 360.0;
+      return HSLColor.fromAHSL(1.0, hue, 0.85, 0.65).toColor();
+    });
+    
+    final pairs = <Color>[];
+    for (final color in uniqueColors) {
+      pairs.add(color);
+      pairs.add(color);
     }
     pairs.shuffle(rng);
 
@@ -88,7 +76,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         x: 0.08 + rng.nextDouble() * 0.82,
       );
       final duration = Duration(
-          milliseconds: _currentBaseDuration + rng.nextInt(3000));
+          milliseconds: _baseDuration + rng.nextInt(3000));
       final delay = rng.nextInt(2000);
       b.controller = AnimationController(vsync: this, duration: duration);
       Future.delayed(Duration(milliseconds: delay), () {
@@ -141,7 +129,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         _selected = null;
         _poppedPairs++;
         _burstCount++;
-        _burstColor = _colorMap[tapped.color]!;
+        _burstColor = tapped.color;
         _showBurst = true;
       });
       Future.delayed(const Duration(milliseconds: 600), () {
@@ -248,7 +236,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
                       child: GestureDetector(
                         onTap: () => _onBubbleTap(b),
                         child: _BubbleWidget(
-                          color: _colorMap[b.color]!,
+                          color: b.color,
                           isSelected: b.isSelected,
                         ),
                       ),
