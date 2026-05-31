@@ -21,7 +21,7 @@ class MultiplayerScoreboard extends StatefulWidget {
 
 class _MultiplayerScoreboardState extends State<MultiplayerScoreboard> {
   Timer? _aiTick;
-  StreamSubscription? _remoteSub;
+  StreamSubscription<Map<String, dynamic>>? _remoteSub;
 
   @override
   void initState() {

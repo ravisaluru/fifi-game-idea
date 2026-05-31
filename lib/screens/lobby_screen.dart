@@ -24,7 +24,7 @@ class _LobbyScreenState extends State<LobbyScreen> {
   String? _myRoomCode;
   String? _error;
   bool _loading = false;
-  StreamSubscription? _roomSub;
+  StreamSubscription<Map<String, dynamic>>? _roomSub;
   List<Map<String, dynamic>> _waitingPlayers = [];
   bool _gameStarted = false;
 

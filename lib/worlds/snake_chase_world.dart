@@ -198,7 +198,7 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
       _snakePos = corners.first;
     });
 
-    await Future.delayed(const Duration(milliseconds: 1000));
+    await Future<void>.delayed(const Duration(milliseconds: 1000));
     if (mounted) setState(() => _stunnedAfterCatch = false);
   }
 

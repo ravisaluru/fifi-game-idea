@@ -360,10 +360,10 @@ class _GrassPainter extends CustomPainter {
     if (isRiver) {
       // Animated water
       final paint = Paint()
-        ..shader = LinearGradient(
+        ..shader = const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [const Color(0xFF1E88E5), const Color(0xFF0D47A1)],
+          colors: [Color(0xFF1E88E5), Color(0xFF0D47A1)],
         ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
       canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), paint);
 

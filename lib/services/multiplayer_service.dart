@@ -13,7 +13,7 @@ class MultiplayerService {
   MultiplayerService._();
 
   final FirebaseDatabase _db = FirebaseDatabase.instance;
-  StreamSubscription? _roomSub;
+  StreamSubscription<DatabaseEvent>? _roomSub;
 
   static String _generateRoomCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';

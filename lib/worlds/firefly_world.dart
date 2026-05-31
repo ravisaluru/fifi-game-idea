@@ -78,9 +78,9 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
     }
 
     await _glowControllers[_sequence[step]].forward(from: 0);
-    await Future.delayed(const Duration(milliseconds: 100));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
     await _glowControllers[_sequence[step]].reverse();
-    await Future.delayed(const Duration(milliseconds: 200));
+    await Future<void>.delayed(const Duration(milliseconds: 200));
     _playSequence(step + 1);
   }
 

@@ -47,7 +47,7 @@ class _VirtualControlsState extends State<VirtualControls> {
 
   @override
   Widget build(BuildContext context) {
-    final baseCenter = Offset(_baseRadius + 12, _baseRadius + 12);
+    const baseCenter = Offset(_baseRadius + 12, _baseRadius + 12);
 
     return Stack(
       children: [
