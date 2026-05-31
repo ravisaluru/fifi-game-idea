@@ -40,7 +40,6 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
   late AnimationController _ticker;
   final List<_FallingStar> _stars = [];
   int _caught = 0;
-  static const int _target = 20;
   int _spawned = 0;
   final Random _rng = Random();
   Timer? _spawnTimer;
@@ -53,7 +52,7 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
 
   // Level definitions
   int _level = 1;
-  static const List<int> _levelThresholds = [7, 14, 20]; // points to complete each level
+  static const List<int> _levelTargets = [7, 7, 6]; // targets for each level
   static const List<double> _levelBaseDy = [0.001, 0.0015, 0.002];
   static const List<double> _levelGravity = [0.00008, 0.00012, 0.00018];
   static const List<int> _levelSpawnMs = [1200, 1000, 800];
@@ -162,10 +161,12 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
 
     if (_showLevelBanner) return; // Prevent double trigger
     // Check level transition
-    if (_caught >= _target) {
-      _onWin();
-    } else if (_level < 3 && _caught >= _levelThresholds[_level - 1]) {
-      _advanceLevel();
+    if (_caught >= _levelTargets[_level - 1]) {
+      if (_level >= 3) {
+        _onWin();
+      } else {
+        _advanceLevel();
+      }
     }
   }
 
@@ -180,8 +181,10 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
       if (!mounted) return;
       setState(() {
         _level++;
+        _caught = 0; // Reset caught count for the new level
         _showLevelBanner = false;
         _spawned = 0;
+        _stars.clear(); // Clear old level's stars
       });
       _startSpawning();
     });
@@ -219,7 +222,7 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(
-                      '⭐ $_caught / $_target',
+                      '⭐ $_caught / ${_levelTargets[_level - 1]}',
                       style: const TextStyle(
                         color: Colors.yellow,
                         fontSize: 20,
