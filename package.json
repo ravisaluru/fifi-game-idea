@@ -1,0 +1,26 @@
+{
+  "name": "fifis-world-adventures",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "description": "A magical adventure game for kids ages 4-8.",
+  "scripts": {
+    "dev": "vite",
+    "dev:worker": "wrangler dev --port 8787",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "deploy": "vite build && wrangler deploy"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "happy-dom": "^15.11.7",
+    "vite": "^6.3.5",
+    "vitest": "^2.1.9",
+    "wrangler": "^4.99.0"
+  }
+}

@@ -1,20 +1,20 @@
 #!/bin/bash
-# stop.sh
-# A script to stop the background Flutter application.
+# stop.sh — stop the background dev server.
 
-if [ -f flutter.pid ]; then
-  PID=$(cat flutter.pid)
+PID_FILE=.dev-server.pid
+
+if [ -f "$PID_FILE" ]; then
+  PID=$(cat "$PID_FILE")
   echo "🛑 Stopping Fifi's World Adventures (PID: $PID)..."
-  
-  if kill $PID > /dev/null 2>&1; then
-    # Also kill any child processes spawned by flutter run
-    pkill -P $PID > /dev/null 2>&1
-    rm -f flutter.pid
+
+  if kill "$PID" > /dev/null 2>&1; then
+    pkill -P "$PID" > /dev/null 2>&1
+    rm -f "$PID_FILE"
     echo "✅ Stopped successfully!"
   else
     echo "⚠️ Process $PID was not running, or failed to terminate."
-    rm -f flutter.pid
+    rm -f "$PID_FILE"
   fi
 else
-  echo "ℹ️ No running application found (no flutter.pid file present)."
+  echo "ℹ️ No running dev server found (no $PID_FILE file present)."
 fi

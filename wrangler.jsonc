@@ -1,0 +1,22 @@
+{
+  // Cloudflare Worker: static game assets + Durable Object multiplayer rooms.
+  // Deploy with `npm run deploy` (builds dist/ first).
+  "name": "fifis-world-adventures",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOMS", "class_name": "Room" },
+      { "name": "IDEAS", "class_name": "Ideas" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["Room", "Ideas"] }
+  ]
+}
