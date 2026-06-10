@@ -1,18 +1,26 @@
-// multiplayer.js — realtime online rooms on Firebase Realtime Database.
+// multiplayer.js — realtime online rooms on Cloudflare Durable Objects.
 //
-// This mirrors the original Flutter MultiplayerService schema exactly, so any
-// existing database rules/data keep working:
+// The worker (worker/index.js) keeps one Room object per 4-letter code and
+// mirrors the original Firebase Realtime Database schema:
 //
-//   rooms/{CODE}: {
-//     hostId, worldId, status: 'lobby' | 'playing', createdAt,
-//     players/{id}: { name, isAi, score, progress, status }
-//   }
+//   { hostId, worldId, status: 'lobby' | 'playing', createdAt,
+//     players: { [id]: { name, isAi, score, progress, status } } }
 //
 // Player status: waiting | ready | playing | finished.
-import { getDb } from './firebase.js';
+//
+// One WebSocket per room code is shared across screens (lobby → game). The
+// server broadcasts the full room snapshot after every change, so watchers
+// behave like Firebase's onValue; the server removes a player whose socket
+// closes (the whole room when it's the host's), standing in for onDisconnect.
 
 // Unambiguous alphabet (no O/0/I/1) — same as the Dart service.
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+
+// The rooms backend deploys together with the site, so online play is always
+// on. (Override VITE_API_BASE only if the site is served from another host.)
+export const onlineAvailable = true;
+
+const API_BASE = import.meta.env.VITE_API_BASE || '';
 
 export function generateRoomCode(rng = Math.random) {
   let code = '';
@@ -37,87 +45,189 @@ export function playerPayload(name) {
   return { name, isAi: false, score: 0, progress: 0, status: 'waiting' };
 }
 
+function wsUrl(code) {
+  if (API_BASE) return `${API_BASE.replace(/^http/, 'ws')}/api/rooms/${code}/ws`;
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${proto}//${window.location.host}/api/rooms/${code}/ws`;
+}
+
+// ── Connection registry ──────────────────────────────────────────────────────
+// Lives at module level so the lobby screen, the app shell, and the game host
+// all share one socket per room.
+const conns = new Map();
+
+class RoomConnection {
+  constructor(code) {
+    this.code = code;
+    this.listeners = new Set();
+    this.room = null;
+    this.waiters = [];
+    this.queue = [];
+    this.closedByUs = false;
+    this.pendingClose = false;
+    this.ws = new WebSocket(wsUrl(code));
+    this.ws.onopen = () => {
+      for (const data of this.queue.splice(0)) this.ws.send(data);
+      if (this.pendingClose) this.ws.close();
+    };
+    this.ws.onmessage = (ev) => this.handle(ev.data);
+    this.ws.onclose = () => {
+      if (conns.get(this.code) === this) conns.delete(this.code);
+      const err = new Error('Connection closed');
+      for (const w of this.waiters.splice(0)) w.reject(err);
+      // Server closed on us (room torn down / network drop): tell watchers
+      // the room is gone, mirroring Firebase's "snapshot no longer exists".
+      if (!this.closedByUs) {
+        this.room = {};
+        for (const cb of this.listeners) cb({});
+      }
+    };
+    this.ws.onerror = () => {};
+  }
+
+  handle(data) {
+    let msg;
+    try { msg = JSON.parse(data); } catch { return; }
+    if (msg.t === 'error') {
+      const err = new Error(msg.code);
+      err.code = msg.code;
+      const w = this.waiters.shift();
+      if (w) { clearTimeout(w.timer); w.reject(err); }
+      return;
+    }
+    if (msg.t === 'room') {
+      this.room = msg.room || {};
+      this.waiters = this.waiters.filter((w) => {
+        if (!w.match(this.room)) return true;
+        clearTimeout(w.timer);
+        w.resolve(this.room);
+        return false;
+      });
+      for (const cb of this.listeners) cb(this.room);
+    }
+  }
+
+  send(obj) {
+    const data = JSON.stringify(obj);
+    if (this.ws.readyState === WebSocket.OPEN) this.ws.send(data);
+    else this.queue.push(data);
+  }
+
+  // Sends msg and resolves with the first room snapshot satisfying `match`,
+  // or rejects on a server error reply (err.code set) or timeout.
+  request(msg, match, timeoutMs = 10000) {
+    return new Promise((resolve, reject) => {
+      const w = { match, resolve, reject };
+      w.timer = setTimeout(() => {
+        this.waiters = this.waiters.filter((x) => x !== w);
+        reject(new Error('Timed out'));
+      }, timeoutMs);
+      this.waiters.push(w);
+      this.send(msg);
+    });
+  }
+
+  close() {
+    this.closedByUs = true;
+    if (conns.get(this.code) === this) conns.delete(this.code);
+    if (this.ws.readyState === WebSocket.CONNECTING) this.pendingClose = true;
+    else { try { this.ws.close(); } catch (e) { /* already closed */ } }
+  }
+}
+
+function getConn(code) {
+  let conn = conns.get(code);
+  if (!conn) {
+    conn = new RoomConnection(code);
+    conns.set(code, conn);
+  }
+  return conn;
+}
+
 // ── Create a new room ────────────────────────────────────────────────────────
 export async function createRoom(hostId, hostName, gameId) {
-  const { db, api } = await getDb();
-  let code;
   // Retry until we get an unused code (extremely rare collision).
   for (;;) {
-    code = generateRoomCode();
-    const snap = await api.get(api.ref(db, `rooms/${code}`));
-    if (!snap.exists()) break;
+    const code = generateRoomCode();
+    const conn = getConn(code);
+    try {
+      await conn.request(
+        { t: 'create', playerId: hostId, name: hostName, worldId: gameId },
+        (room) => room.hostId === hostId,
+      );
+      return code;
+    } catch (e) {
+      conn.close();
+      if (e.code !== 'exists') throw e;
+    }
   }
-  const roomRef = api.ref(db, `rooms/${code}`);
-  await api.set(roomRef, {
-    hostId,
-    worldId: gameId,
-    status: 'lobby',
-    createdAt: api.serverTimestamp(),
-    players: { [hostId]: playerPayload(hostName) },
-  });
-  // Clean the room up when the host drops off.
-  api.onDisconnect(roomRef).remove();
-  return code;
 }
 
 // ── Join an existing room ────────────────────────────────────────────────────
 export async function joinRoom(code, playerId, playerName) {
-  const { db, api } = await getDb();
-  const snap = await api.get(api.ref(db, `rooms/${code}`));
-  if (!snap.exists()) throw new Error(`Room ${code} not found`);
-  const data = snap.val();
-  if (data.status !== 'lobby') throw new Error('Game already started');
-  const players = data.players || {};
-  if (Object.keys(players).length >= 4) throw new Error('Room is full');
-
-  const meRef = api.ref(db, `rooms/${code}/players/${playerId}`);
-  await api.set(meRef, playerPayload(playerName));
-  api.onDisconnect(meRef).remove();
-  return data;
+  const conn = getConn(code);
+  try {
+    return await conn.request(
+      { t: 'join', playerId, name: playerName },
+      (room) => !!(room.players && room.players[playerId]),
+    );
+  } catch (e) {
+    conn.close();
+    throw new Error(
+      e.code === 'not_found' ? `Room ${code} not found`
+        : e.code === 'started' ? 'Game already started'
+          : e.code === 'full' ? 'Room is full'
+            : e.message,
+    );
+  }
 }
 
 // ── Watch room changes ───────────────────────────────────────────────────────
 // cb receives the room object ({} when the room is gone). Returns unsubscribe.
 export async function watchRoom(code, cb) {
-  const { db, api } = await getDb();
-  return api.onValue(api.ref(db, `rooms/${code}`), (snap) => {
-    cb(snap.exists() ? snap.val() : {});
-  });
+  const conn = getConn(code);
+  conn.listeners.add(cb);
+  if (conn.room) cb(conn.room);
+  else conn.send({ t: 'watch', playerId: localPlayerId() });
+  return () => conn.listeners.delete(cb);
 }
 
 // ── Game actions ─────────────────────────────────────────────────────────────
 export async function startGame(code, gameId) {
-  const { db, api } = await getDb();
-  await api.update(api.ref(db, `rooms/${code}`), { status: 'playing', worldId: gameId });
+  getConn(code).send({ t: 'start', worldId: gameId });
 }
 
 export async function updateScore(code, playerId, score, progress) {
-  const { db, api } = await getDb();
-  const updates = { [`players/${playerId}/score`]: score, [`players/${playerId}/status`]: 'playing' };
-  if (progress != null) updates[`players/${playerId}/progress`] = progress;
-  await api.update(api.ref(db, `rooms/${code}`), updates);
+  getConn(code).send({ t: 'score', playerId, score, progress });
 }
 
 export async function markFinished(code, playerId) {
-  const { db, api } = await getDb();
-  await api.set(api.ref(db, `rooms/${code}/players/${playerId}/status`), 'finished');
+  getConn(code).send({ t: 'finished', playerId });
 }
 
 export async function leaveRoom(code, playerId) {
-  const { db, api } = await getDb();
-  await api.remove(api.ref(db, `rooms/${code}/players/${playerId}`));
+  const conn = conns.get(code);
+  if (!conn) return;
+  conn.send({ t: 'leave', playerId });
+  conn.close();
 }
 
 // Host backed out of the lobby — take the whole room down.
 export async function removeRoom(code) {
-  const { db, api } = await getDb();
-  await api.remove(api.ref(db, `rooms/${code}`));
+  const conn = conns.get(code);
+  if (!conn) return;
+  conn.send({ t: 'remove' });
+  conn.close();
 }
 
 // ── Suggest-a-Game ideas ─────────────────────────────────────────────────────
-// Ideas always save locally; when Firebase is configured they're also sent to
-// `ideas/` so the game makers actually receive them.
+// Ideas always save locally; they're also sent to the worker so the game
+// makers actually receive them.
 export async function submitIdea(entry) {
-  const { db, api } = await getDb();
-  await api.set(api.push(api.ref(db, 'ideas')), { ...entry, at: api.serverTimestamp() });
+  const res = await fetch(`${API_BASE}/api/ideas`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(entry),
+  });
+  if (!res.ok) throw new Error(`Idea submit failed: ${res.status}`);
 }

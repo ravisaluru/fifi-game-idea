@@ -4,7 +4,7 @@ A magical, tactile, kid-first game for ages 4–8. Seven mini-games, a hero
 customizer, online rooms, and a "Suggest a Game" idea box — built as a fast
 static web app with **React + Vite**, styled with the **"Squish" design system**
 from the Claude Design handoff, with online multiplayer on
-**Firebase Realtime Database**.
+**Cloudflare Durable Objects** (free plan — no external services).
 
 ---
 
@@ -46,28 +46,34 @@ game up a tier (Easy → Just right → Speedy), giving up eases it back down.
 6. **🐍 Snake Escape** — turn-based grid: grab 🍓, dodge the chasing snake
 7. **🪙 Treasure Flip** — flip leaves to match hidden treasures
 
-## 🌐 Online multiplayer (Firebase)
+## 🌐 Online multiplayer (Cloudflare Durable Objects)
 
-`src/multiplayer.js` keeps the **same Realtime Database schema** as the
-original app, so existing rules/data work unchanged:
+Rooms live in a Cloudflare Worker (`worker/index.js`): one **Durable Object
+per 4-letter room code**, talked to over WebSocket at `/api/rooms/{CODE}/ws`.
+The room state keeps the **same schema** as the original Firebase app:
 
 ```
-rooms/{CODE}: {
-  hostId, worldId, status: 'lobby' | 'playing', createdAt,
-  players/{id}: { name, isAi, score, progress, status }
-}
+{ hostId, worldId, status: 'lobby' | 'playing', createdAt,
+  players: { [id]: { name, isAi, score, progress, status } } }
 ```
 
 Hosts get a 4-letter room code (unambiguous alphabet, no O/0/I/1); friends join
 with the code; the host starts the match and everyone plays the same game while
 `GameShell` publishes live progress (throttled) and shows opponents' progress
-chips. Rooms self-clean via `onDisconnect`. "Suggest a Game" ideas are also
-sent to `ideas/` when Firebase is configured (and always saved locally).
+chips. The server broadcasts the full snapshot after every change (like
+Firebase's `onValue`) and cleans up when sockets drop — a guest's player is
+removed, a host's room is torn down (like `onDisconnect`). Stale rooms expire
+after 6 hours via a Durable Object alarm.
 
-**Configuration:** copy `.env.example` to `.env.local` and fill in your
-Firebase web app keys. Without them the game still works fully — solo and
-vs-robots play don't touch the network — and online rooms politely report
-they're unavailable (same graceful degradation as before).
+"Suggest a Game" ideas are saved locally **and** POSTed to `/api/ideas`, which
+stores them in a singleton Durable Object. Reading them back requires a secret:
+`wrangler secret put IDEAS_READ_KEY`, then
+`curl -H "Authorization: Bearer <key>" https://<site>/api/ideas`.
+
+**No configuration needed** — the backend deploys with the site and everything
+runs on the Workers **free plan** (SQLite-backed Durable Objects, WebSocket
+hibernation, 100k requests/day). Smoke-test the whole room lifecycle with
+`npm run dev:worker` + `node scripts/smoke-online.mjs`.
 
 ## 📐 Project structure
 
@@ -82,12 +88,14 @@ src/
 ├── motion.js           # Shared ticker, visibility-aware interval, height measure
 ├── audio.js            # Synthesized SFX engine (visibility-aware)
 ├── difficulty.jsx      # Tier curve + per-game tuning table
-├── firebase.js         # Lazy Firebase bootstrap (env-driven, optional)
-├── multiplayer.js      # Realtime rooms — original Firebase schema
+├── multiplayer.js      # Realtime rooms client — WebSocket to the worker
 ├── gamehost.jsx        # Mounts the right game, applies tier, settles the room
 ├── screens/            # welcome, home, character, pregame, victory, multiplayer, suggest
 └── games/              # star, bubble, firefly, tiger, stones, snake, treasure
+worker/index.js         # Cloudflare Worker — Room + Ideas Durable Objects
+wrangler.jsonc          # Worker config: static assets + DO bindings
 test/                   # Vitest suite (difficulty, rooms, colors, app smoke)
+scripts/smoke-online.mjs # End-to-end rooms test against a running worker
 ```
 
 ## 🚀 Running locally
@@ -97,18 +105,23 @@ test/                   # Vitest suite (difficulty, rooms, colors, app smoke)
 ./stop.sh         # stop it
 npm test          # run the test suite
 npm run build     # production build → dist/
+npm run dev:worker # rooms backend on :8787 (vite proxies /api to it)
 ```
 
-(Or just `npm install && npm run dev`.)
+(Or just `npm install && npm run dev`. Solo and vs-robots play need no
+backend; run `dev:worker` alongside to try online rooms locally.)
 
 ## ☁️ Deploying
 
-The build is a plain static site. On **Cloudflare Pages** set:
+One command ships the whole thing — static site and multiplayer backend — as a
+single Cloudflare Worker (free plan):
 
-* **Build command:** `npm run build`
-* **Output directory:** `dist`
-* **Environment variables (optional, for online play):** the `VITE_FIREBASE_*`
-  keys from `.env.example`
+```bash
+npm run deploy    # vite build + wrangler deploy
+```
+
+Live at **https://fifis-world-adventures.&lt;your-subdomain&gt;.workers.dev** —
+no environment variables or external services required.
 
 ## 🔁 CI
 

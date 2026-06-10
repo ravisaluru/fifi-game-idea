@@ -1,11 +1,10 @@
-// screens/multiplayer.jsx — "Play Together": online rooms (Firebase Realtime
-// Database, same rooms/{code} schema as the original app) or vs robots.
+// screens/multiplayer.jsx — "Play Together": online rooms (Cloudflare Durable
+// Objects, same rooms/{code} schema as the original app) or vs robots.
 import React, { useEffect, useRef, useState } from 'react';
 import { AudioFX } from '../audio.js';
 import { GAMES } from '../data.js';
-import { onlineAvailable } from '../firebase.js';
 import {
-  createRoom, joinRoom, leaveRoom, localPlayerId, removeRoom, startGame, watchRoom,
+  createRoom, joinRoom, leaveRoom, localPlayerId, onlineAvailable, removeRoom, startGame, watchRoom,
 } from '../multiplayer.js';
 import { Hero, ScreenHeader, Squish, shade, tint } from '../ui.jsx';
 

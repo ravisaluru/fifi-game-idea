@@ -1,11 +1,10 @@
 // screens/suggest.jsx — kid-friendly "Suggest a Game" idea form.
-// Ideas always save locally; when Firebase is configured they're also sent to
-// the `ideas/` collection so the game makers actually receive them.
+// Ideas always save locally; they're also sent to the worker's ideas store so
+// the game makers actually receive them.
 import React, { useState } from 'react';
 import { AudioFX } from '../audio.js';
 import { GAMES } from '../data.js';
-import { onlineAvailable } from '../firebase.js';
-import { submitIdea } from '../multiplayer.js';
+import { onlineAvailable, submitIdea } from '../multiplayer.js';
 import { Confetti, ScreenHeader, Squish, tint } from '../ui.jsx';
 
 const IDEA_EMOJIS = ['🚀', '🦄', '🐙', '🍩', '🏰', '🎈', '🐧', '🌈', '🦖', '⚽', '🎸', '🪐'];
