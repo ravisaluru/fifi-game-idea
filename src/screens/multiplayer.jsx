@@ -28,6 +28,7 @@ export function MultiplayerScreen({ state, go, startOnline }) {
   const playerId = useRef(localPlayerId());
   const unsubRef = useRef(null);
   const startedRef = useRef(false);
+  const codeRef = useRef(null); // mirrors `code` for the unmount cleanup
 
   const stopWatching = () => { if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; } setRoom(null); };
 
@@ -41,17 +42,19 @@ export function MultiplayerScreen({ state, go, startOnline }) {
     });
   };
 
-  // Leaving the screen mid-lobby: tidy up the room.
+  // Leaving the screen mid-lobby: tidy up the room. Unmount only — keying this
+  // on `code` would tear down the watcher attached right before `code` is set.
   useEffect(() => () => {
     if (unsubRef.current) unsubRef.current();
-    if (!startedRef.current && code) removeRoom(code).catch(() => {});
-  }, [code]);
+    if (!startedRef.current && codeRef.current) removeRoom(codeRef.current).catch(() => {});
+  }, []);
 
   const host = async () => {
     setBusy(true); setError(null);
     try {
       const g = randomPlayableGame();
       const c = await createRoom(playerId.current, me, g.id);
+      codeRef.current = c;
       setCode(c);
       setOnlineStep('host');
       await watch(c, true);
@@ -92,7 +95,7 @@ export function MultiplayerScreen({ state, go, startOnline }) {
     setError(null);
     if (mode === 'online' && onlineStep !== 'choice') {
       stopWatching();
-      if (onlineStep === 'host' && code) { removeRoom(code).catch(() => {}); setCode(null); }
+      if (onlineStep === 'host' && code) { removeRoom(code).catch(() => {}); codeRef.current = null; setCode(null); }
       if (onlineStep === 'join') leaveRoom(joinCode.trim().toUpperCase(), playerId.current).catch(() => {});
       setOnlineStep('choice');
     } else if (mode) {
