@@ -1,21 +1,21 @@
 #!/bin/sh
 # Run once after cloning: sh scripts/setup-hooks.sh
-# Installs a pre-push hook that runs analyze + tests locally before every push.
+# Installs a pre-push hook that runs tests + a production build before every push.
 
 HOOK_DIR="$(git rev-parse --git-dir)/hooks"
 
 cat > "$HOOK_DIR/pre-push" << 'EOF'
 #!/bin/sh
-# Pre-push hook: runs flutter analyze and flutter test.
+# Pre-push hook: runs the test suite and a production build.
 # To skip in an emergency: git push --no-verify
 
 set -e
 
-echo "→ flutter analyze"
-flutter analyze --fatal-infos
+echo "→ npm test"
+npm test
 
-echo "→ flutter test"
-flutter test
+echo "→ npm run build"
+npm run build
 
 echo "✓ All checks passed"
 EOF

@@ -1,4 +1,4 @@
-name: Flutter CI
+name: CI
 
 on:
   push:
@@ -7,70 +7,32 @@ on:
     branches: [main]
 
 jobs:
-  analyze-and-test:
-    name: Analyze & Test
+  test-and-build:
+    name: Test & Build
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          channel: stable
-          cache: true
+          node-version: 22
+          cache: npm
 
       - name: Install dependencies
-        run: flutter pub get
-
-      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed lib/ test/
-
-      - name: Analyze
-        run: flutter analyze --fatal-infos
+        run: npm ci
 
       - name: Run tests
-        run: flutter test --coverage
+        run: npm test
 
-      - name: Upload coverage
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage
-          path: coverage/lcov.info
-          retention-days: 7
+      - name: Build
+        run: npm run build
 
-  build-android:
-    name: Build Android (debug)
-    runs-on: ubuntu-latest
-    needs: analyze-and-test
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build APK (debug)
-        run: flutter build apk --debug --no-tree-shake-icons
-
-      - name: Upload APK
+      - name: Upload build
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: dist
+          path: dist/
           retention-days: 7
