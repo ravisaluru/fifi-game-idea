@@ -33,13 +33,18 @@ jobs:
       - name: Run tests
         run: flutter test --coverage
 
+      - name: Delete previous coverage artifacts
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: coverage
+
       - name: Upload coverage
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: coverage
           path: coverage/lcov.info
-          retention-days: 7
+          retention-days: 1
 
   build-android:
     name: Build Android (debug)
@@ -68,9 +73,14 @@ jobs:
       - name: Build APK (debug)
         run: flutter build apk --debug --no-tree-shake-icons
 
+      - name: Delete previous APK artifacts
+        uses: geekyeggo/delete-artifact@v2
+        with:
+          name: debug-apk
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
-          retention-days: 7
+          retention-days: 1
