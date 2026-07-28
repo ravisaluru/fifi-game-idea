@@ -1,10 +1,10 @@
-/// Level configuration constants for all mini-game worlds.
-///
-/// Extracted from private widget state into public classes to enable
-/// direct unit testing of difficulty curves and viewport safety bounds.
-///
-/// Design principle: all games use 10 levels with monotonically increasing
-/// difficulty, capped at element counts safe for the 480px mobile viewport.
+// Level configuration constants for all mini-game worlds.
+//
+// Extracted from private widget state into public classes to enable
+// direct unit testing of difficulty curves and viewport safety bounds.
+//
+// Design principle: all games use 10 levels with monotonically increasing
+// difficulty, capped at element counts safe for the 480px mobile viewport.
 
 /// Bubble World (color-matching balloon popping game).
 ///
