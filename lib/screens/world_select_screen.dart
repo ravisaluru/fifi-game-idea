@@ -131,7 +131,9 @@ class WorldSelectScreen extends StatelessWidget {
                                       SizedBox(
                                         height: 60,
                                         child: Center(
-                                          child: WorldGamePreview(id: w.id),
+                                          child: RepaintBoundary(
+                                            child: WorldGamePreview(id: w.id),
+                                          ),
                                         ),
                                       ),
                                       const SizedBox(height: 8),

@@ -199,7 +199,8 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
           _rainController,
           _driftController,
         ]),
-        builder: (context, _) {
+        child: RepaintBoundary(child: widget.child),
+        builder: (context, child) {
           return Stack(
             children: [
               // Sky gradient
@@ -335,7 +336,7 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
                 }),
 
               // Game content on top
-              RepaintBoundary(child: widget.child),
+              child!,
             ],
           );
         },

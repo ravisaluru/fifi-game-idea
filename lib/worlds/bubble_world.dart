@@ -56,6 +56,13 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   }
 
   void _initBubbles() {
+    for (final b in _bubbles) {
+      b.isDisposed = true;
+      try {
+        b.controller.dispose();
+      } catch (_) {}
+    }
+
     final rng = Random();
 
     // Generate unique colors for the pairs by distributing hue in HSL space
@@ -122,7 +129,9 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   void dispose() {
     for (final b in _bubbles) {
       b.isDisposed = true;
-      b.controller.dispose();
+      try {
+        b.controller.dispose();
+      } catch (_) {}
     }
     super.dispose();
   }
@@ -143,8 +152,16 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
       });
     } else if (_selected!.color == tapped.color) {
       // Match found — stop controllers for popped bubbles
-      _selected!.controller.stop();
-      tapped.controller.stop();
+      if (!_selected!.isDisposed) {
+        try {
+          _selected!.controller.stop();
+        } catch (_) {}
+      }
+      if (!tapped.isDisposed) {
+        try {
+          tapped.controller.stop();
+        } catch (_) {}
+      }
       setState(() {
         _selected!.isPopped = true;
         tapped.isPopped = true;

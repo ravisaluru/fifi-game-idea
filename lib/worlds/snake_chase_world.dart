@@ -314,34 +314,33 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
                     ),
                   )),
 
-              // Snake
-              AnimatedBuilder(
-                animation: _ticker,
-                builder: (context, _) {
-                  return Positioned(
-                    left: _snakePos.dx * size.width - 24,
-                    top: _snakePos.dy * size.height - 24,
-                    child: AnimatedOpacity(
-                      opacity: _stunnedAfterCatch ? 0.4 : 1.0,
-                      duration: const Duration(milliseconds: 300),
-                      child: const Text('🐍', style: TextStyle(fontSize: 44)),
-                    ),
-                  );
-                },
-              ),
-
-              // Player
-              AnimatedBuilder(
-                animation: _ticker,
-                builder: (context, _) => Positioned(
-                  left: _playerPos.dx * size.width - 24,
-                  top: _playerPos.dy * size.height - 24,
-                  child: Text(
-                    _stunnedAfterCatch
-                        ? '😵'
-                        : (context.read<GameState>().selectedCharacter?.emoji ??
-                            '🏃'),
-                    style: const TextStyle(fontSize: 44),
+              // Snake & Player moving layer
+              RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _ticker,
+                  builder: (context, _) => Stack(
+                    children: [
+                      Positioned(
+                        left: _snakePos.dx * size.width - 24,
+                        top: _snakePos.dy * size.height - 24,
+                        child: AnimatedOpacity(
+                          opacity: _stunnedAfterCatch ? 0.4 : 1.0,
+                          duration: const Duration(milliseconds: 300),
+                          child: const Text('🐍', style: TextStyle(fontSize: 44)),
+                        ),
+                      ),
+                      Positioned(
+                        left: _playerPos.dx * size.width - 24,
+                        top: _playerPos.dy * size.height - 24,
+                        child: Text(
+                          _stunnedAfterCatch
+                              ? '😵'
+                              : (context.read<GameState>().selectedCharacter?.emoji ??
+                                  '🏃'),
+                          style: const TextStyle(fontSize: 44),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),

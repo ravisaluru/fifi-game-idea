@@ -72,17 +72,23 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
 
   void _playSequence(int step) async {
     if (!mounted || step >= _sequence.length) {
-      setState(() {
-        _isShowingSequence = false;
-        _playerCanTap = true;
-      });
+      if (mounted) {
+        setState(() {
+          _isShowingSequence = false;
+          _playerCanTap = true;
+        });
+      }
       return;
     }
 
     await _glowControllers[_sequence[step]].forward(from: 0);
+    if (!mounted) return;
     await Future<void>.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
     await _glowControllers[_sequence[step]].reverse();
+    if (!mounted) return;
     await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
     _playSequence(step + 1);
   }
 

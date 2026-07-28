@@ -121,8 +121,11 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     for (final idx in _sequence) {
       if (!mounted) return;
       await _glowControllers[idx].forward(from: 0);
+      if (!mounted) return;
       await Future<void>.delayed(const Duration(milliseconds: 150));
+      if (!mounted) return;
       await _glowControllers[idx].reverse();
+      if (!mounted) return;
       await Future<void>.delayed(const Duration(milliseconds: 200));
     }
 

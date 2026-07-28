@@ -287,33 +287,35 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
               ),
 
               // Falling stars
-              AnimatedBuilder(
-                animation: _ticker,
-                builder: (context, _) => Stack(
-                  children: _stars
-                      .map((star) => Positioned(
-                            left: star.x * size.width - 30,
-                            top: star.y * size.height,
-                            child: GestureDetector(
-                              onTap: () => _onStarTap(
-                                  star,
-                                  Offset(star.x * size.width,
-                                      star.y * size.height)),
-                              child: Container(
-                                color: Colors.transparent,
-                                width: 80,
-                                height: 80,
-                                child: Center(
-                                  child: Transform.rotate(
-                                    angle: star.rotation,
-                                    child: const Text('⭐',
-                                        style: TextStyle(fontSize: 44)),
+              RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _ticker,
+                  builder: (context, _) => Stack(
+                    children: _stars
+                        .map((star) => Positioned(
+                              left: star.x * size.width - 30,
+                              top: star.y * size.height,
+                              child: GestureDetector(
+                                onTap: () => _onStarTap(
+                                    star,
+                                    Offset(star.x * size.width,
+                                        star.y * size.height)),
+                                child: Container(
+                                  color: Colors.transparent,
+                                  width: 80,
+                                  height: 80,
+                                  child: Center(
+                                    child: Transform.rotate(
+                                      angle: star.rotation,
+                                      child: const Text('⭐',
+                                          style: TextStyle(fontSize: 44)),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ))
-                      .toList(),
+                            ))
+                        .toList(),
+                  ),
                 ),
               ),
 
