@@ -9,6 +9,7 @@ import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
 import '../widgets/multiplayer_scoreboard.dart';
 import '../services/multiplayer_service.dart';
+import '../config/level_configs.dart';
 
 class _Bubble {
   final int id;
@@ -31,11 +32,9 @@ class BubbleWorldScreen extends StatefulWidget {
 
 class _BubbleWorldScreenState extends State<BubbleWorldScreen>
     with TickerProviderStateMixin {
-  static const int _maxLevel = 5;
+  static const int _maxLevel = BubbleLevelConfig.maxLevel;
   // Pairs double per level: 2, 4, 8, 16, 32
-  static const List<int> _pairsPerLevel = [2, 4, 8, 16, 32];
-  // Constant base duration (ms) for all levels (slow and steady)
-  static const int _baseDuration = 9600;
+  static const List<int> _pairsPerLevel = BubbleLevelConfig.pairsPerLevel;
 
   int _level = 1;
   List<_Bubble> _bubbles = [];
@@ -79,7 +78,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         x: 0.08 + rng.nextDouble() * 0.82,
       );
       final duration = Duration(
-          milliseconds: _baseDuration + rng.nextInt(3000));
+          milliseconds: BubbleLevelConfig.baseDurationMs[_level - 1] + rng.nextInt(3000));
       final delay = rng.nextInt(2000);
       b.controller = AnimationController(vsync: this, duration: duration);
       Future.delayed(Duration(milliseconds: delay), () {

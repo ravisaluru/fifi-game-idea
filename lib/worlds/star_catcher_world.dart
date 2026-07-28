@@ -10,6 +10,7 @@ import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
 import '../widgets/multiplayer_scoreboard.dart';
 import '../services/multiplayer_service.dart';
+import '../config/level_configs.dart';
 
 class _FallingStar {
   final int id;
@@ -54,10 +55,10 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
 
   // Level definitions
   int _level = 1;
-  static const List<int> _levelTargets = [20, 20, 20]; // targets for each level (20 stars per level)
-  static const List<double> _levelBaseDy = [0.001, 0.0015, 0.002];
-  static const List<double> _levelGravity = [0.00008, 0.00012, 0.00018];
-  static const List<int> _levelSpawnMs = [1200, 1000, 800];
+  static const List<int> _levelTargets = StarCatcherLevelConfig.levelTargets;
+  static const List<double> _levelBaseDy = StarCatcherLevelConfig.levelBaseDy;
+  static const List<double> _levelGravity = StarCatcherLevelConfig.levelGravity;
+  static const List<int> _levelSpawnMs = StarCatcherLevelConfig.levelSpawnMs;
 
   double get _currentGravity => _levelGravity[_level - 1];
 
@@ -178,7 +179,7 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
     if (_showLevelBanner) return; // Prevent double trigger
     // Check level transition
     if (_caught >= _levelTargets[_level - 1]) {
-      if (_level >= 3) {
+      if (_level >= StarCatcherLevelConfig.maxLevel) {
         _onWin();
       } else {
         _advanceLevel();
@@ -261,7 +262,7 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
                       ),
                     ),
                     Text(
-                      'Level $_level / 3',
+                      'Level $_level / ${StarCatcherLevelConfig.maxLevel}',
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 13,

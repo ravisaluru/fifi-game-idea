@@ -45,6 +45,10 @@ Defines the core data structures and state logic:
 * `game_state.dart`: Observable core player state (lives, coins, worlds completed).
 * `multiplayer_session.dart`: Multiplayer state tracking, AI simulators, and session types.
 
+### `config/`
+Game balancing and configuration constants:
+* `level_configs.dart`: Centralized difficulty tuning, 10-level scaling curves, and thresholds for micro-games (Bubble, Star Catcher, Stepping Stones, Treasure Hunt).
+
 ### `screens/`
 Contains the full-screen views of the application:
 * `home_screen.dart`: Welcome title screen with audio toggles.
@@ -78,6 +82,8 @@ Contains the logic and views for each of the 7 distinct micro-game worlds:
 5. `star_catcher_world.dart` (Star Shower): Star-catching tap game.
 6. `snake_chase_world.dart` (Snake Grassland): Grid evasion game with dynamic AI.
 7. `treasure_hunt_world.dart` (Treasure Hunt): 3D leaf-flipping memory matching race.
+
+**Note**: Bubble World, Star Shower, Stepping Stones, and Treasure Hunt utilize a 10-level progression system defined in `config/level_configs.dart`.
 
 ## 📝 Key Documentation
 

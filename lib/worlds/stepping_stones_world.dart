@@ -10,6 +10,7 @@ import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
 import '../widgets/multiplayer_scoreboard.dart';
 import '../services/multiplayer_service.dart';
+import '../config/level_configs.dart';
 
 class SteppingStonesScreen extends StatefulWidget {
   const SteppingStonesScreen({super.key});
@@ -20,8 +21,8 @@ class SteppingStonesScreen extends StatefulWidget {
 
 class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     with TickerProviderStateMixin {
-  static const int _maxLevel = 3;
-  static const List<int> _stonesPerLevel = [6, 10, 15];
+  static const int _maxLevel = SteppingStonesLevelConfig.maxLevel;
+  static const List<int> _stonesPerLevel = SteppingStonesLevelConfig.stonesPerLevel;
 
   int _level = 1;
   int get _stoneCount => _stonesPerLevel[_level - 1];

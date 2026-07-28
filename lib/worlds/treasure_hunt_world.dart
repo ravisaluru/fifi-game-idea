@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
+import '../config/level_configs.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
@@ -47,16 +48,18 @@ class TreasureHuntScreen extends StatefulWidget {
 }
 
 class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
-  static const int _gameDuration = 120;
-  static const int _spotCount = 25;
-  static const int _treasureCount = 10;
+  static const int _maxLevel = TreasureHuntLevelConfig.maxLevel;
 
   late List<_CoverSpot> _spots;
   late List<_AiOpponent> _opponents;
-  int _playerCoins = 0;
-  int _playerTreasuresFound = 0;
-  int _secondsLeft = _gameDuration;
+  int _level = 1;
+  int _levelCoins = 0;     // per-level coins (reset each level, used for win/loss)
+  int _totalCoins = 0;     // accumulated across all levels (used for final reward)
+  int _levelTreasuresFound = 0;
+  int _secondsLeft = 0;
   bool _gameOver = false;
+  bool _showLevelBanner = false;
+  String _levelBannerText = '';
 
   Timer? _countdownTimer;
   Timer? _aiTimer;
@@ -66,10 +69,29 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
     '🍃', '🪨', '🌿', '🍂', '🌱', '🪵', '🌾', '🍁',
   ];
 
+  // All possible AI characters — unlocked progressively
+  static const List<Map<String, dynamic>> _aiCharacters = [
+    {'emoji': '🤖', 'name': 'Robo', 'baseInterval': 3.5},
+    {'emoji': '👻', 'name': 'Ghost', 'baseInterval': 4.0},
+    {'emoji': '🦊', 'name': 'Fox', 'baseInterval': 3.0},
+  ];
+
+  int get _spotCount => TreasureHuntLevelConfig.spotsPerLevel[_level - 1];
+  int get _treasureCount => TreasureHuntLevelConfig.treasuresPerLevel[_level - 1];
+  double get _aiSpeedFactor => TreasureHuntLevelConfig.aiSpeedFactor[_level - 1];
+  int get _aiCount => TreasureHuntLevelConfig.aiCountPerLevel[_level - 1];
+
   @override
   void initState() {
     super.initState();
     context.read<GameState>().resetForWorld();
+    _initLevel();
+  }
+
+  void _initLevel() {
+    _secondsLeft = TreasureHuntLevelConfig.timePerLevel[_level - 1];
+    _levelCoins = 0;
+    _levelTreasuresFound = 0;
 
     // Generate spots — first _treasureCount have treasure, rest don't
     final indices = List.generate(_spotCount, (i) => i)..shuffle(_rng);
@@ -86,17 +108,38 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
               coins: 1 + _rng.nextInt(5),
             ));
 
-    _opponents = [
-      _AiOpponent(emoji: '🤖', name: 'Robo', discoverInterval: 3.5),
-      _AiOpponent(emoji: '👻', name: 'Ghost', discoverInterval: 4.0),
-    ];
+    // Create AI opponents based on current level config
+    _opponents = List.generate(_aiCount, (i) {
+      final char = _aiCharacters[i];
+      return _AiOpponent(
+        emoji: char['emoji'] as String,
+        name: char['name'] as String,
+        discoverInterval: (char['baseInterval'] as double) / _aiSpeedFactor,
+      );
+    });
 
+    final state = context.read<GameState>();
+    if (state.isMultiplayer) {
+      final session = state.multiplayerSession!;
+      final localPlayer = session.localPlayer;
+      if (localPlayer != null) {
+        MultiplayerService.instance.updateScore(
+          session.roomCode,
+          localPlayer.id,
+          _totalCoins,
+          progress: (_level - 1) / _maxLevel,
+        );
+      }
+    }
+
+    _countdownTimer?.cancel();
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!mounted) return;
       setState(() => _secondsLeft--);
       if (_secondsLeft <= 0) _onTimeUp();
     });
 
+    _aiTimer?.cancel();
     _aiTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
       if (!mounted) return;
       for (final ai in _opponents) {
@@ -121,7 +164,7 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
   }
 
   void _onSpotTap(_CoverSpot spot) {
-    if (spot.collected || spot.revealed || _gameOver) return;
+    if (spot.collected || spot.revealed || _gameOver || _showLevelBanner) return;
 
     setState(() {
       spot.revealed = true;
@@ -131,8 +174,9 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
       // Collect treasure
       setState(() {
         spot.collected = true;
-        _playerCoins += spot.coins;
-        _playerTreasuresFound++;
+        _levelCoins += spot.coins;
+        _totalCoins += spot.coins;
+        _levelTreasuresFound++;
       });
 
       final state = context.read<GameState>();
@@ -140,19 +184,19 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
         final session = state.multiplayerSession!;
         final localPlayer = session.localPlayer;
         if (localPlayer != null) {
-          final progress = _playerTreasuresFound / _treasureCount;
+          final progress = (_level - 1 + _levelTreasuresFound / _treasureCount) / _maxLevel;
           MultiplayerService.instance.updateScore(
             session.roomCode,
             localPlayer.id,
-            _playerCoins,
+            _totalCoins,
             progress: progress,
           );
         }
       }
 
-      // Check if all player-findable treasures are found
+      // Check if all treasures for this level are found — auto-complete
       final remainingTreasures = _spots.where((s) => s.hasTreasure && !s.collected).length;
-      if (remainingTreasures == 0) _onTimeUp();
+      if (remainingTreasures == 0) _onLevelComplete();
     } else {
       // No treasure — re-hide after 2 seconds
       Future.delayed(const Duration(seconds: 2), () {
@@ -162,21 +206,55 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
   }
 
   void _onTimeUp() {
-    if (_gameOver) return;
-    _gameOver = true;
+    if (_gameOver || _showLevelBanner) return;
     _countdownTimer?.cancel();
     _aiTimer?.cancel();
 
-    final maxAiCoins = _opponents.map((a) => a.coins).reduce(max);
-    final didWin = _playerCoins >= maxAiCoins;
+    final maxAiCoins = _opponents.isEmpty ? 0 : _opponents.map((a) => a.coins).reduce(max);
+    final didWinLevel = _levelCoins >= maxAiCoins;
 
-    // Only complete world on win
-    if (didWin) {
-      context.read<GameState>().completeWorld(WorldId.treasure);
+    if (didWinLevel) {
+      _onLevelComplete();
+    } else {
+      // Player lost this level — game over
+      _gameOver = true;
+      context.read<GameState>().addCoins(_totalCoins);
+      VictoryPopup.show(context, didWin: false, coinsEarned: _totalCoins, worldName: 'Forest Treasure Hunt');
     }
-    context.read<GameState>().addCoins(_playerCoins);
+  }
 
-    VictoryPopup.show(context, didWin: didWin, coinsEarned: _playerCoins, worldName: 'Forest Treasure Hunt');
+  void _onLevelComplete() {
+    if (_gameOver || _showLevelBanner) return;
+    _countdownTimer?.cancel();
+    _aiTimer?.cancel();
+
+    if (_level >= _maxLevel) {
+      _onWin();
+      return;
+    }
+
+    // Show level banner then advance
+    setState(() {
+      _showLevelBanner = true;
+      _levelBannerText = 'Level $_level Complete! 🎁';
+    });
+
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (!mounted) return;
+      setState(() {
+        _level++;
+        _showLevelBanner = false;
+      });
+      _initLevel();
+      setState(() {});
+    });
+  }
+
+  void _onWin() {
+    _gameOver = true;
+    context.read<GameState>().completeWorld(WorldId.treasure);
+    context.read<GameState>().addCoins(_totalCoins);
+    VictoryPopup.show(context, didWin: true, coinsEarned: _totalCoins, worldName: 'Forest Treasure Hunt');
   }
 
   @override
@@ -191,20 +269,32 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
         child: SafeArea(
           child: Stack(
             children: [
-              // Timer
+              // Timer and level indicator
               Positioned(
                 top: 12,
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 300),
-                    style: TextStyle(
-                      color: timerColor,
-                      fontSize: _secondsLeft <= 20 ? 26 : 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    child: Text('⏱ $_secondsLeft s'),
+                  child: Column(
+                    children: [
+                      AnimatedDefaultTextStyle(
+                        duration: const Duration(milliseconds: 300),
+                        style: TextStyle(
+                          color: timerColor,
+                          fontSize: _secondsLeft <= 20 ? 26 : 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        child: Text('⏱ $_secondsLeft s'),
+                      ),
+                      Text(
+                        'Level $_level / $_maxLevel',
+                        style: const TextStyle(
+                          color: Colors.yellow,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -219,7 +309,7 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
               // Scoreboard (Only show in single player)
               if (!state.isMultiplayer)
                 Positioned(
-                  top: 40,
+                  top: 56,
                   left: 0,
                   right: 0,
                   child: Row(
@@ -230,7 +320,7 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
                             context.read<GameState>().selectedCharacter?.emoji ??
                                 '🧒',
                         name: 'You',
-                        coins: _playerCoins,
+                        coins: _levelCoins,
                         highlight: true,
                       ),
                       ..._opponents.map((a) => _ScoreChip(
@@ -244,7 +334,7 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
 
               // Treasures found counter
               Positioned(
-                top: 80,
+                top: 90,
                 left: 0,
                 right: 0,
                 child: Center(
@@ -255,7 +345,7 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
-                      '🪙 Treasures: $_playerTreasuresFound / $_treasureCount',
+                      '🪙 Treasures: $_levelTreasuresFound / $_treasureCount  •  Total: $_totalCoins',
                       style: const TextStyle(
                         color: Colors.yellow,
                         fontSize: 14,
@@ -320,6 +410,27 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
                   ),
                 ),
               ),
+
+              // Level transition banner
+              if (_showLevelBanner)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    child: Center(
+                      child: Text(
+                        _levelBannerText,
+                        style: const TextStyle(
+                          color: Colors.yellow,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          shadows: [
+                            Shadow(blurRadius: 12, color: Colors.black54)
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
