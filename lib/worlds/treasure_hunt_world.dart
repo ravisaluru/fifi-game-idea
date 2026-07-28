@@ -174,8 +174,9 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
   }
 
   void _onSpotTap(_CoverSpot spot) {
-    if (spot.collected || spot.revealed || _gameOver || _showLevelBanner)
+    if (spot.collected || spot.revealed || _gameOver || _showLevelBanner) {
       return;
+    }
 
     setState(() {
       spot.revealed = true;
