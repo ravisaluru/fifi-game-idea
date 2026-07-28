@@ -31,6 +31,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: 'fifi-game-idea' # Note: Update if your project name is different
+          projectName: 'fifis-world-adventures'
           directory: 'build/web'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
