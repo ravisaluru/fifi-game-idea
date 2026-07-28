@@ -7,6 +7,7 @@ import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/virtual_controls.dart';
 import '../widgets/multiplayer_scoreboard.dart';
+import '../services/multiplayer_service.dart';
 import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
 
@@ -75,6 +76,23 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
           _obstacles = _generateObstacles();
         }
       });
+
+      final elapsed = _surviveSeconds - _secondsLeft;
+      final state = context.read<GameState>();
+      if (state.isMultiplayer) {
+        final session = state.multiplayerSession!;
+        final localPlayer = session.localPlayer;
+        if (localPlayer != null) {
+          final progress = elapsed / _surviveSeconds;
+          MultiplayerService.instance.updateScore(
+            session.roomCode,
+            localPlayer.id,
+            elapsed,
+            progress: progress,
+          );
+        }
+      }
+
       if (_secondsLeft <= 0) _onWin();
     });
   }

@@ -7,6 +7,8 @@ import '../widgets/animated_world_background.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
+import '../widgets/multiplayer_scoreboard.dart';
+import '../services/multiplayer_service.dart';
 
 class FireflyWorldScreen extends StatefulWidget {
   const FireflyWorldScreen({super.key});
@@ -113,6 +115,22 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
     if (_playerTaps.length == _sequence.length) {
       // Round complete
       _roundsWon++;
+
+      final state = context.read<GameState>();
+      if (state.isMultiplayer) {
+        final session = state.multiplayerSession!;
+        final localPlayer = session.localPlayer;
+        if (localPlayer != null) {
+          final progress = _roundsWon / _winsNeeded;
+          MultiplayerService.instance.updateScore(
+            session.roomCode,
+            localPlayer.id,
+            _roundsWon,
+            progress: progress,
+          );
+        }
+      }
+
       if (_roundsWon >= _winsNeeded) {
         _onWin();
       } else {
@@ -166,7 +184,12 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
                   style: const TextStyle(color: Colors.white70, fontSize: 16),
                 ),
               ),
-              const BackToMenuButton(),
+               const BackToMenuButton(),
+               if (state.isMultiplayer)
+                 MultiplayerScoreboard(
+                   session: state.multiplayerSession!,
+                   worldId: WorldId.firefly,
+                 ),
 
               // Instruction
               Positioned(

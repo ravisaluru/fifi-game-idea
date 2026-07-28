@@ -6,6 +6,8 @@ import '../models/game_state.dart';
 import '../widgets/animated_world_background.dart';
 import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
+import '../widgets/multiplayer_scoreboard.dart';
+import '../services/multiplayer_service.dart';
 
 class _CoverSpot {
   final int id;
@@ -133,6 +135,21 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
         _playerTreasuresFound++;
       });
 
+      final state = context.read<GameState>();
+      if (state.isMultiplayer) {
+        final session = state.multiplayerSession!;
+        final localPlayer = session.localPlayer;
+        if (localPlayer != null) {
+          final progress = _playerTreasuresFound / _treasureCount;
+          MultiplayerService.instance.updateScore(
+            session.roomCode,
+            localPlayer.id,
+            _playerCoins,
+            progress: progress,
+          );
+        }
+      }
+
       // Check if all player-findable treasures are found
       final remainingTreasures = _spots.where((s) => s.hasTreasure && !s.collected).length;
       if (remainingTreasures == 0) _onTimeUp();
@@ -164,6 +181,7 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<GameState>();
     final size = MediaQuery.of(context).size;
     final timerColor = _secondsLeft <= 20 ? Colors.red : Colors.white;
 
@@ -192,31 +210,37 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
               ),
 
               const BackToMenuButton(),
-
-              // Scoreboard
-              Positioned(
-                top: 40,
-                left: 0,
-                right: 0,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _ScoreChip(
-                      emoji:
-                          context.read<GameState>().selectedCharacter?.emoji ??
-                              '🧒',
-                      name: 'You',
-                      coins: _playerCoins,
-                      highlight: true,
-                    ),
-                    ..._opponents.map((a) => _ScoreChip(
-                          emoji: a.emoji,
-                          name: a.name,
-                          coins: a.coins,
-                        )),
-                  ],
+              if (state.isMultiplayer)
+                MultiplayerScoreboard(
+                  session: state.multiplayerSession!,
+                  worldId: WorldId.treasure,
                 ),
-              ),
+
+              // Scoreboard (Only show in single player)
+              if (!state.isMultiplayer)
+                Positioned(
+                  top: 40,
+                  left: 0,
+                  right: 0,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _ScoreChip(
+                        emoji:
+                            context.read<GameState>().selectedCharacter?.emoji ??
+                                '🧒',
+                        name: 'You',
+                        coins: _playerCoins,
+                        highlight: true,
+                      ),
+                      ..._opponents.map((a) => _ScoreChip(
+                            emoji: a.emoji,
+                            name: a.name,
+                            coins: a.coins,
+                          )),
+                    ],
+                  ),
+                ),
 
               // Treasures found counter
               Positioned(

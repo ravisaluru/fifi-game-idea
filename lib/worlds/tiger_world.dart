@@ -9,6 +9,7 @@ import '../widgets/victory_popup.dart';
 import '../widgets/lives_hud.dart';
 import '../widgets/virtual_controls.dart';
 import '../widgets/multiplayer_scoreboard.dart';
+import '../services/multiplayer_service.dart';
 
 enum _TigerState { lookingAway, turningAround, lookingAtYou, turningAway }
 
@@ -128,6 +129,21 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
     });
     setState(() => _playerProgress = (_playerProgress + _stepSize).clamp(0, 1));
     _bobController.forward(from: 0);
+
+    final state = context.read<GameState>();
+    if (state.isMultiplayer) {
+      final session = state.multiplayerSession!;
+      final localPlayer = session.localPlayer;
+      if (localPlayer != null) {
+        MultiplayerService.instance.updateScore(
+          session.roomCode,
+          localPlayer.id,
+          (_playerProgress * 100).toInt(),
+          progress: _playerProgress,
+        );
+      }
+    }
+
     if (_playerProgress >= 1.0) {
       _onWin();
     }
@@ -159,6 +175,19 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
       _playerProgress = max(0, _playerProgress - _stepSize * 3);
       _wasCaught = false;
     });
+
+    if (state.isMultiplayer) {
+      final session = state.multiplayerSession!;
+      final localPlayer = session.localPlayer;
+      if (localPlayer != null) {
+        MultiplayerService.instance.updateScore(
+          session.roomCode,
+          localPlayer.id,
+          (_playerProgress * 100).toInt(),
+          progress: _playerProgress,
+        );
+      }
+    }
 
     if (state.lives <= 0) {
       Future.delayed(const Duration(milliseconds: 600), _onLose);

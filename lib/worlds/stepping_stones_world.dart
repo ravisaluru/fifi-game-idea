@@ -8,6 +8,8 @@ import '../widgets/lives_hud.dart';
 import '../widgets/particle_burst.dart';
 import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
+import '../widgets/multiplayer_scoreboard.dart';
+import '../services/multiplayer_service.dart';
 
 class SteppingStonesScreen extends StatefulWidget {
   const SteppingStonesScreen({super.key});
@@ -52,6 +54,20 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     _lastSize = null;
     _playerStep = 0;
     _playerStoneIndex = -1;
+
+    final state = context.read<GameState>();
+    if (state.isMultiplayer) {
+      final session = state.multiplayerSession!;
+      final localPlayer = session.localPlayer;
+      if (localPlayer != null) {
+        MultiplayerService.instance.updateScore(
+          session.roomCode,
+          localPlayer.id,
+          0,
+          progress: 0.0,
+        );
+      }
+    }
 
     // Dispose old glow controllers
     for (final c in _glowControllers) {
@@ -133,6 +149,22 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
         _burstPosition = _stonePositions[stoneIndex];
         _showBurst = true;
       });
+
+      final state = context.read<GameState>();
+      if (state.isMultiplayer) {
+        final session = state.multiplayerSession!;
+        final localPlayer = session.localPlayer;
+        if (localPlayer != null) {
+          final progress = _playerStep / _stoneCount;
+          MultiplayerService.instance.updateScore(
+            session.roomCode,
+            localPlayer.id,
+            _playerStep,
+            progress: progress,
+          );
+        }
+      }
+
       Future.delayed(const Duration(milliseconds: 600), () {
         if (mounted) setState(() => _showBurst = false);
       });
@@ -145,6 +177,20 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
         _playerStep = 0;
         _playerStoneIndex = -1;
       });
+
+      if (state.isMultiplayer) {
+        final session = state.multiplayerSession!;
+        final localPlayer = session.localPlayer;
+        if (localPlayer != null) {
+          MultiplayerService.instance.updateScore(
+            session.roomCode,
+            localPlayer.id,
+            0,
+            progress: 0.0,
+          );
+        }
+      }
+
       if (state.lives <= 0) {
         Future.delayed(const Duration(milliseconds: 600), _onLose);
         return;
@@ -233,6 +279,11 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
                 ),
               ),
               const BackToMenuButton(),
+              if (state.isMultiplayer)
+                MultiplayerScoreboard(
+                  session: state.multiplayerSession!,
+                  worldId: WorldId.stones,
+                ),
               Positioned(
                 left: 8,
                 top: size.height * 0.3,

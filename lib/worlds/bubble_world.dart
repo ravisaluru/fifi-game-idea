@@ -7,6 +7,8 @@ import '../widgets/lives_hud.dart';
 import '../widgets/particle_burst.dart';
 import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
+import '../widgets/multiplayer_scoreboard.dart';
+import '../services/multiplayer_service.dart';
 
 class _Bubble {
   final int id;
@@ -14,6 +16,7 @@ class _Bubble {
   double x;
   bool isPopped = false;
   bool isSelected = false;
+  bool isDisposed = false;
   late AnimationController controller;
 
   _Bubble({required this.id, required this.color, required this.x});
@@ -80,10 +83,14 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
       final delay = rng.nextInt(2000);
       b.controller = AnimationController(vsync: this, duration: duration);
       Future.delayed(Duration(milliseconds: delay), () {
-        if (mounted) b.controller.forward();
+        if (mounted && !b.isDisposed) {
+          try {
+            b.controller.forward();
+          } catch (_) {}
+        }
       });
       b.controller.addStatusListener((status) {
-        if (!mounted) return;
+        if (!mounted || b.isDisposed) return;
         if (status == AnimationStatus.completed && !b.isPopped) {
           context.read<GameState>().loseLife();
           if (context.read<GameState>().lives <= 0) _onLose();
@@ -95,11 +102,26 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
 
     _selected = null;
     _poppedPairs = 0;
+
+    final state = context.read<GameState>();
+    if (state.isMultiplayer) {
+      final session = state.multiplayerSession!;
+      final localPlayer = session.localPlayer;
+      if (localPlayer != null) {
+        MultiplayerService.instance.updateScore(
+          session.roomCode,
+          localPlayer.id,
+          0,
+          progress: 0.0,
+        );
+      }
+    }
   }
 
   @override
   void dispose() {
     for (final b in _bubbles) {
+      b.isDisposed = true;
       b.controller.dispose();
     }
     super.dispose();
@@ -132,6 +154,22 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         _burstColor = tapped.color;
         _showBurst = true;
       });
+
+      final state = context.read<GameState>();
+      if (state.isMultiplayer) {
+        final session = state.multiplayerSession!;
+        final localPlayer = session.localPlayer;
+        if (localPlayer != null) {
+          final progress = _poppedPairs / _currentPairs;
+          MultiplayerService.instance.updateScore(
+            session.roomCode,
+            localPlayer.id,
+            _poppedPairs,
+            progress: progress,
+          );
+        }
+      }
+
       Future.delayed(const Duration(milliseconds: 600), () {
         if (mounted) setState(() => _showBurst = false);
       });
@@ -174,6 +212,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
       
       // Safely dispose old controllers now that they are no longer in the active widget tree
       for (final b in oldBubbles) {
+        b.isDisposed = true;
         b.controller.dispose();
       }
     });
@@ -223,6 +262,11 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
                 ),
               ),
               const BackToMenuButton(),
+              if (state.isMultiplayer)
+                MultiplayerScoreboard(
+                  session: state.multiplayerSession!,
+                  worldId: WorldId.bubble,
+                ),
               ..._bubbles.where((b) => !b.isPopped).map((b) {
                 return AnimatedBuilder(
                   animation: b.controller,

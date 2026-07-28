@@ -8,6 +8,8 @@ import '../widgets/lives_hud.dart';
 import '../widgets/particle_burst.dart';
 import '../widgets/back_to_menu_button.dart';
 import '../widgets/victory_popup.dart';
+import '../widgets/multiplayer_scoreboard.dart';
+import '../services/multiplayer_service.dart';
 
 class _FallingStar {
   final int id;
@@ -154,6 +156,21 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
       _burstPosition = tapPosition;
       _showBurst = true;
     });
+
+    final state = context.read<GameState>();
+    if (state.isMultiplayer) {
+      final session = state.multiplayerSession!;
+      final localPlayer = session.localPlayer;
+      if (localPlayer != null) {
+        final progress = _caught / _levelTargets[_level - 1];
+        MultiplayerService.instance.updateScore(
+          session.roomCode,
+          localPlayer.id,
+          _caught,
+          progress: progress,
+        );
+      }
+    }
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) setState(() => _showBurst = false);
     });
@@ -185,6 +202,21 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
         _spawned = 0;
         _stars.clear(); // Clear old level's stars
       });
+
+      final state = context.read<GameState>();
+      if (state.isMultiplayer) {
+        final session = state.multiplayerSession!;
+        final localPlayer = session.localPlayer;
+        if (localPlayer != null) {
+          MultiplayerService.instance.updateScore(
+            session.roomCode,
+            localPlayer.id,
+            0,
+            progress: 0.0,
+          );
+        }
+      }
+
       _startSpawning();
     });
   }
@@ -238,7 +270,12 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
                   ],
                 ),
               ),
-              const BackToMenuButton(),
+               const BackToMenuButton(),
+               if (state.isMultiplayer)
+                 MultiplayerScoreboard(
+                   session: state.multiplayerSession!,
+                   worldId: WorldId.star,
+                 ),
 
               // Cloud emitter
               Positioned(

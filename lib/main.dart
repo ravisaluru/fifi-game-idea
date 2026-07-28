@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 import 'models/game_state.dart';
 import 'screens/home_screen.dart';
@@ -38,7 +39,9 @@ void main() async {
   ));
 
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     _firebaseAvailable = true;
   } catch (_) {
     // Firebase not configured yet — online play will be unavailable,
