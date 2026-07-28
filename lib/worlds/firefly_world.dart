@@ -143,7 +143,8 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
   void _onWin() {
     context.read<GameState>().completeWorld(WorldId.firefly);
     context.read<GameState>().addCoins(5);
-    VictoryPopup.show(context, didWin: true, coinsEarned: 5, worldName: 'Firefly Night');
+    VictoryPopup.show(context,
+        didWin: true, coinsEarned: 5, worldName: 'Firefly Night');
   }
 
   void _onLose() {
@@ -184,12 +185,12 @@ class _FireflyWorldScreenState extends State<FireflyWorldScreen>
                   style: const TextStyle(color: Colors.white70, fontSize: 16),
                 ),
               ),
-               const BackToMenuButton(),
-               if (state.isMultiplayer)
-                 MultiplayerScoreboard(
-                   session: state.multiplayerSession!,
-                   worldId: WorldId.firefly,
-                 ),
+              const BackToMenuButton(),
+              if (state.isMultiplayer)
+                MultiplayerScoreboard(
+                  session: state.multiplayerSession!,
+                  worldId: WorldId.firefly,
+                ),
 
               // Instruction
               Positioned(

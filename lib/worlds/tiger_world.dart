@@ -198,7 +198,8 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
     _stateTimer?.cancel();
     context.read<GameState>().completeWorld(WorldId.tiger);
     context.read<GameState>().addCoins(10);
-    VictoryPopup.show(context, didWin: true, coinsEarned: 10, worldName: 'Tiger Forest');
+    VictoryPopup.show(context,
+        didWin: true, coinsEarned: 10, worldName: 'Tiger Forest');
   }
 
   void _onLose() {
@@ -296,7 +297,13 @@ class _TigerWorldScreenState extends State<TigerWorldScreen>
                       left: playerX + _shakeAnim.value - 24,
                       top: size.height * 0.30 + bob,
                       child: Text(
-                        _wasCaught ? '😱' : context.read<GameState>().selectedCharacter?.emoji ?? '🏃',
+                        _wasCaught
+                            ? '😱'
+                            : context
+                                    .read<GameState>()
+                                    .selectedCharacter
+                                    ?.emoji ??
+                                '🏃',
                         style: const TextStyle(fontSize: 48),
                       ),
                     );

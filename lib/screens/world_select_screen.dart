@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/game_state.dart';
 
-
 class WorldSelectScreen extends StatelessWidget {
   const WorldSelectScreen({super.key});
 
@@ -91,7 +90,8 @@ class WorldSelectScreen extends StatelessWidget {
                   builder: (context, constraints) {
                     final screenWidth = constraints.maxWidth;
                     // Dynamically calculate columns based on card width
-                    final crossAxisCount = (screenWidth / 185).floor().clamp(2, 6);
+                    final crossAxisCount =
+                        (screenWidth / 185).floor().clamp(2, 6);
                     final childAspectRatio = screenWidth < 500 ? 1.1 : 1.25;
 
                     return GridView.builder(
@@ -151,8 +151,8 @@ class WorldSelectScreen extends StatelessWidget {
                                   const Positioned(
                                     top: 8,
                                     right: 10,
-                                    child:
-                                        Text('⭐', style: TextStyle(fontSize: 20)),
+                                    child: Text('⭐',
+                                        style: TextStyle(fontSize: 20)),
                                   ),
                               ],
                             ),
@@ -264,14 +264,19 @@ class _TigerPlainsPreviewState extends State<TigerPlainsPreview>
             clipBehavior: Clip.none,
             children: [
               const Positioned(
-                  left: 4, bottom: 4, child: Text('🏖️', style: TextStyle(fontSize: 12))),
+                  left: 4,
+                  bottom: 4,
+                  child: Text('🏖️', style: TextStyle(fontSize: 12))),
               const Positioned(
-                  right: 4, bottom: 4, child: Text('🐯', style: TextStyle(fontSize: 20))),
+                  right: 4,
+                  bottom: 4,
+                  child: Text('🐯', style: TextStyle(fontSize: 20))),
               Positioned(
                 left: 32,
                 top: 4,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                   decoration: BoxDecoration(
                     color: (isGreen ? Colors.green : Colors.red)
                         .withValues(alpha: 0.35),
@@ -339,13 +344,12 @@ class _FireflyForestPreviewState extends State<FireflyForestPreview>
           height: 60,
           child: Stack(
             children: [
-              const Center(
-                  child: Text('🧚', style: TextStyle(fontSize: 22))),
+              const Center(child: Text('🧚', style: TextStyle(fontSize: 22))),
               Positioned(
                 left: 30 + 15 * cos(t),
                 top: 20 + 12 * sin(t),
-                child: _GlowingDot(
-                    opacity: (0.4 + 0.6 * sin(t)).clamp(0.0, 1.0)),
+                child:
+                    _GlowingDot(opacity: (0.4 + 0.6 * sin(t)).clamp(0.0, 1.0)),
               ),
               Positioned(
                 left: 55 + 18 * sin(t + pi / 2),
@@ -480,8 +484,7 @@ class _BubbleWorldPreviewState extends State<BubbleWorldPreview>
               );
             },
           ),
-          const Center(
-              child: Text('🫧', style: TextStyle(fontSize: 22))),
+          const Center(child: Text('🫧', style: TextStyle(fontSize: 22))),
         ],
       ),
     );
@@ -689,8 +692,7 @@ class _SnakeGrasslandPreviewState extends State<SnakeGrasslandPreview>
           height: 60,
           child: Stack(
             children: [
-              const Center(
-                  child: Text('🪨', style: TextStyle(fontSize: 12))),
+              const Center(child: Text('🪨', style: TextStyle(fontSize: 12))),
               Positioned(
                 left: 40 + 20 * cos(t),
                 top: 20 + 12 * sin(t),
@@ -749,8 +751,7 @@ class _TreasureHuntPreviewState extends State<TreasureHuntPreview>
           child: Stack(
             children: [
               if (showCoin)
-                const Center(
-                    child: Text('🪙', style: TextStyle(fontSize: 16))),
+                const Center(child: Text('🪙', style: TextStyle(fontSize: 16))),
               Center(
                 child: Transform(
                   transform: Matrix4.identity()

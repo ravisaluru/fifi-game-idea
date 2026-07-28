@@ -7,7 +7,11 @@ class _Spark {
   Offset vel;
   Color color;
   double life;
-  _Spark({required this.pos, required this.vel, required this.color, this.life = 1.0});
+  _Spark(
+      {required this.pos,
+      required this.vel,
+      required this.color,
+      this.life = 1.0});
 }
 
 class VictoryPopup extends StatefulWidget {
@@ -22,7 +26,8 @@ class VictoryPopup extends StatefulWidget {
     this.coinsEarned = 0,
   });
 
-  static Future<void> show(BuildContext context, {
+  static Future<void> show(
+    BuildContext context, {
     required bool didWin,
     required String worldName,
     int coinsEarned = 0,
@@ -42,7 +47,8 @@ class VictoryPopup extends StatefulWidget {
   State<VictoryPopup> createState() => _VictoryPopupState();
 }
 
-class _VictoryPopupState extends State<VictoryPopup> with SingleTickerProviderStateMixin {
+class _VictoryPopupState extends State<VictoryPopup>
+    with SingleTickerProviderStateMixin {
   late AnimationController _ticker;
   final List<_Spark> _sparks = [];
   final Random _rng = Random();
@@ -51,14 +57,18 @@ class _VictoryPopupState extends State<VictoryPopup> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _ticker = AnimationController(vsync: this, duration: const Duration(seconds: 1))..repeat();
+    _ticker =
+        AnimationController(vsync: this, duration: const Duration(seconds: 1))
+          ..repeat();
     _ticker.addListener(_onTick);
   }
 
   void _onTick() {
     if (!mounted) return;
     final now = DateTime.now();
-    final dt = _lastFrame != null ? now.difference(_lastFrame!).inMilliseconds / 1000.0 : 0.016;
+    final dt = _lastFrame != null
+        ? now.difference(_lastFrame!).inMilliseconds / 1000.0
+        : 0.016;
     _lastFrame = now;
 
     // spawn fireworks occasionally if won
@@ -112,7 +122,7 @@ class _VictoryPopupState extends State<VictoryPopup> with SingleTickerProviderSt
                 painter: _FireworksPainter(_sparks),
               ),
             ),
-            
+
           // Main card
           Container(
             width: 320,
@@ -121,7 +131,10 @@ class _VictoryPopupState extends State<VictoryPopup> with SingleTickerProviderSt
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
               boxShadow: const [
-                BoxShadow(color: Colors.black26, blurRadius: 16, offset: Offset(0, 8)),
+                BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 16,
+                    offset: Offset(0, 8)),
               ],
             ),
             child: Column(
@@ -144,7 +157,8 @@ class _VictoryPopupState extends State<VictoryPopup> with SingleTickerProviderSt
                 if (widget.didWin && widget.coinsEarned > 0) ...[
                   const SizedBox(height: 24),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
                     decoration: BoxDecoration(
                       color: Colors.amber.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(16),
@@ -175,12 +189,15 @@ class _VictoryPopupState extends State<VictoryPopup> with SingleTickerProviderSt
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF7B1FA2),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 32, vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(32),
                     ),
                   ),
-                  child: const Text('Back to Worlds', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                  child: const Text('Back to Worlds',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 ),
               ],
             ),

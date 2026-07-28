@@ -33,8 +33,7 @@ class _VirtualControlsState extends State<VirtualControls> {
   void _onPanUpdate(Offset localPos, Offset baseCenter) {
     final pos = localPos - baseCenter;
     final dist = pos.distance;
-    final clamped =
-        dist > _baseRadius ? pos / dist * _baseRadius : pos;
+    final clamped = dist > _baseRadius ? pos / dist * _baseRadius : pos;
     setState(() => _thumbOffset = clamped);
     final normalized = clamped / _baseRadius;
     widget.onMove(normalized);

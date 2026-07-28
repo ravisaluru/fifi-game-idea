@@ -57,13 +57,13 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
 
   void _initBubbles() {
     final rng = Random();
-    
+
     // Generate unique colors for the pairs by distributing hue in HSL space
     final uniqueColors = List<Color>.generate(_currentPairs, (i) {
       final hue = (i * 360.0 / _currentPairs) % 360.0;
       return HSLColor.fromAHSL(1.0, hue, 0.85, 0.65).toColor();
     });
-    
+
     final pairs = <Color>[];
     for (final color in uniqueColors) {
       pairs.add(color);
@@ -78,7 +78,8 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
         x: 0.08 + rng.nextDouble() * 0.82,
       );
       final duration = Duration(
-          milliseconds: BubbleLevelConfig.baseDurationMs[_level - 1] + rng.nextInt(3000));
+          milliseconds:
+              BubbleLevelConfig.baseDurationMs[_level - 1] + rng.nextInt(3000));
       final delay = rng.nextInt(2000);
       b.controller = AnimationController(vsync: this, duration: duration);
       Future.delayed(Duration(milliseconds: delay), () {
@@ -199,16 +200,16 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
 
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (!mounted) return;
-      
+
       // Store reference to old bubbles to dispose them after rebuild
       final oldBubbles = List<_Bubble>.from(_bubbles);
-      
+
       setState(() {
         _level++;
         _showLevelBanner = false;
         _initBubbles();
       });
-      
+
       // Safely dispose old controllers now that they are no longer in the active widget tree
       for (final b in oldBubbles) {
         b.isDisposed = true;
@@ -220,7 +221,8 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
   void _onWin() {
     context.read<GameState>().completeWorld(WorldId.bubble);
     context.read<GameState>().addCoins(5);
-    VictoryPopup.show(context, didWin: true, coinsEarned: 5, worldName: 'Bubble Sky');
+    VictoryPopup.show(context,
+        didWin: true, coinsEarned: 5, worldName: 'Bubble Sky');
   }
 
   void _onLose() {
@@ -254,8 +256,7 @@ class _BubbleWorldScreenState extends State<BubbleWorldScreen>
                     ),
                     child: Text(
                       'Level $_level / $_maxLevel  •  Pop matching pairs!',
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 14),
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
                     ),
                   ),
                 ),

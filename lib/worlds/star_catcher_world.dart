@@ -226,7 +226,8 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
     _spawnTimer?.cancel();
     context.read<GameState>().completeWorld(WorldId.star);
     context.read<GameState>().addCoins(5);
-    VictoryPopup.show(context, didWin: true, coinsEarned: 5, worldName: 'Star Shower');
+    VictoryPopup.show(context,
+        didWin: true, coinsEarned: 5, worldName: 'Star Shower');
   }
 
   void _onLose() {
@@ -271,12 +272,12 @@ class _StarCatcherScreenState extends State<StarCatcherScreen>
                   ],
                 ),
               ),
-               const BackToMenuButton(),
-               if (state.isMultiplayer)
-                 MultiplayerScoreboard(
-                   session: state.multiplayerSession!,
-                   worldId: WorldId.star,
-                 ),
+              const BackToMenuButton(),
+              if (state.isMultiplayer)
+                MultiplayerScoreboard(
+                  session: state.multiplayerSession!,
+                  worldId: WorldId.star,
+                ),
 
               // Cloud emitter
               Positioned(

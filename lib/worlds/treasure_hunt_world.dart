@@ -17,7 +17,7 @@ class _CoverSpot {
   final bool hasTreasure;
   final int coins;
   bool collected = false; // treasure taken
-  bool revealed = false;  // currently flipped
+  bool revealed = false; // currently flipped
 
   _CoverSpot({
     required this.id,
@@ -53,8 +53,8 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
   late List<_CoverSpot> _spots;
   late List<_AiOpponent> _opponents;
   int _level = 1;
-  int _levelCoins = 0;     // per-level coins (reset each level, used for win/loss)
-  int _totalCoins = 0;     // accumulated across all levels (used for final reward)
+  int _levelCoins = 0; // per-level coins (reset each level, used for win/loss)
+  int _totalCoins = 0; // accumulated across all levels (used for final reward)
   int _levelTreasuresFound = 0;
   int _secondsLeft = 0;
   bool _gameOver = false;
@@ -66,7 +66,14 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
   final Random _rng = Random();
 
   static const List<String> _coverEmojis = [
-    '🍃', '🪨', '🌿', '🍂', '🌱', '🪵', '🌾', '🍁',
+    '🍃',
+    '🪨',
+    '🌿',
+    '🍂',
+    '🌱',
+    '🪵',
+    '🌾',
+    '🍁',
   ];
 
   // All possible AI characters — unlocked progressively
@@ -77,8 +84,10 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
   ];
 
   int get _spotCount => TreasureHuntLevelConfig.spotsPerLevel[_level - 1];
-  int get _treasureCount => TreasureHuntLevelConfig.treasuresPerLevel[_level - 1];
-  double get _aiSpeedFactor => TreasureHuntLevelConfig.aiSpeedFactor[_level - 1];
+  int get _treasureCount =>
+      TreasureHuntLevelConfig.treasuresPerLevel[_level - 1];
+  double get _aiSpeedFactor =>
+      TreasureHuntLevelConfig.aiSpeedFactor[_level - 1];
   int get _aiCount => TreasureHuntLevelConfig.aiCountPerLevel[_level - 1];
 
   @override
@@ -144,7 +153,8 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
       if (!mounted) return;
       for (final ai in _opponents) {
         if (_rng.nextDouble() < 0.5 / ai.discoverInterval) {
-          final available = _spots.where((s) => s.hasTreasure && !s.collected).toList();
+          final available =
+              _spots.where((s) => s.hasTreasure && !s.collected).toList();
           if (available.isEmpty) break;
           final spot = available[_rng.nextInt(available.length)];
           setState(() {
@@ -164,7 +174,8 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
   }
 
   void _onSpotTap(_CoverSpot spot) {
-    if (spot.collected || spot.revealed || _gameOver || _showLevelBanner) return;
+    if (spot.collected || spot.revealed || _gameOver || _showLevelBanner)
+      return;
 
     setState(() {
       spot.revealed = true;
@@ -184,7 +195,8 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
         final session = state.multiplayerSession!;
         final localPlayer = session.localPlayer;
         if (localPlayer != null) {
-          final progress = (_level - 1 + _levelTreasuresFound / _treasureCount) / _maxLevel;
+          final progress =
+              (_level - 1 + _levelTreasuresFound / _treasureCount) / _maxLevel;
           MultiplayerService.instance.updateScore(
             session.roomCode,
             localPlayer.id,
@@ -195,7 +207,8 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
       }
 
       // Check if all treasures for this level are found — auto-complete
-      final remainingTreasures = _spots.where((s) => s.hasTreasure && !s.collected).length;
+      final remainingTreasures =
+          _spots.where((s) => s.hasTreasure && !s.collected).length;
       if (remainingTreasures == 0) _onLevelComplete();
     } else {
       // No treasure — re-hide after 2 seconds
@@ -210,7 +223,8 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
     _countdownTimer?.cancel();
     _aiTimer?.cancel();
 
-    final maxAiCoins = _opponents.isEmpty ? 0 : _opponents.map((a) => a.coins).reduce(max);
+    final maxAiCoins =
+        _opponents.isEmpty ? 0 : _opponents.map((a) => a.coins).reduce(max);
     final didWinLevel = _levelCoins >= maxAiCoins;
 
     if (didWinLevel) {
@@ -219,7 +233,10 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
       // Player lost this level — game over
       _gameOver = true;
       context.read<GameState>().addCoins(_totalCoins);
-      VictoryPopup.show(context, didWin: false, coinsEarned: _totalCoins, worldName: 'Forest Treasure Hunt');
+      VictoryPopup.show(context,
+          didWin: false,
+          coinsEarned: _totalCoins,
+          worldName: 'Forest Treasure Hunt');
     }
   }
 
@@ -254,7 +271,10 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
     _gameOver = true;
     context.read<GameState>().completeWorld(WorldId.treasure);
     context.read<GameState>().addCoins(_totalCoins);
-    VictoryPopup.show(context, didWin: true, coinsEarned: _totalCoins, worldName: 'Forest Treasure Hunt');
+    VictoryPopup.show(context,
+        didWin: true,
+        coinsEarned: _totalCoins,
+        worldName: 'Forest Treasure Hunt');
   }
 
   @override
@@ -316,9 +336,11 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       _ScoreChip(
-                        emoji:
-                            context.read<GameState>().selectedCharacter?.emoji ??
-                                '🧒',
+                        emoji: context
+                                .read<GameState>()
+                                .selectedCharacter
+                                ?.emoji ??
+                            '🧒',
                         name: 'You',
                         coins: _levelCoins,
                         highlight: true,
@@ -339,7 +361,8 @@ class _TreasureHuntScreenState extends State<TreasureHuntScreen> {
                 right: 0,
                 child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(12),

@@ -200,7 +200,6 @@ class _AnimatedWorldBackgroundState extends State<AnimatedWorldBackground>
           _driftController,
         ]),
         builder: (context, _) {
-
           return Stack(
             children: [
               // Sky gradient
@@ -571,7 +570,8 @@ class _StarsPainter extends CustomPainter {
   final double pulse;
   final List<Offset> positions;
   final List<double> sizes;
-  _StarsPainter({required this.pulse, required this.positions, required this.sizes});
+  _StarsPainter(
+      {required this.pulse, required this.positions, required this.sizes});
 
   @override
   void paint(Canvas canvas, Size size) {

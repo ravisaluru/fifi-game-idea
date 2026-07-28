@@ -22,7 +22,8 @@ class SteppingStonesScreen extends StatefulWidget {
 class _SteppingStonesScreenState extends State<SteppingStonesScreen>
     with TickerProviderStateMixin {
   static const int _maxLevel = SteppingStonesLevelConfig.maxLevel;
-  static const List<int> _stonesPerLevel = SteppingStonesLevelConfig.stonesPerLevel;
+  static const List<int> _stonesPerLevel =
+      SteppingStonesLevelConfig.stonesPerLevel;
 
   int _level = 1;
   int get _stoneCount => _stonesPerLevel[_level - 1];
@@ -225,7 +226,8 @@ class _SteppingStonesScreenState extends State<SteppingStonesScreen>
   void _onWin() {
     context.read<GameState>().completeWorld(WorldId.stones);
     context.read<GameState>().addCoins(5);
-    VictoryPopup.show(context, didWin: true, coinsEarned: 5, worldName: 'Stepping Stones');
+    VictoryPopup.show(context,
+        didWin: true, coinsEarned: 5, worldName: 'Stepping Stones');
   }
 
   void _onLose() {

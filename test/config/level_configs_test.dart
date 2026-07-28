@@ -8,11 +8,13 @@ void main() {
     });
 
     test('pairsPerLevel has maxLevel entries', () {
-      expect(BubbleLevelConfig.pairsPerLevel.length, BubbleLevelConfig.maxLevel);
+      expect(
+          BubbleLevelConfig.pairsPerLevel.length, BubbleLevelConfig.maxLevel);
     });
 
     test('baseDurationMs has maxLevel entries', () {
-      expect(BubbleLevelConfig.baseDurationMs.length, BubbleLevelConfig.maxLevel);
+      expect(
+          BubbleLevelConfig.baseDurationMs.length, BubbleLevelConfig.maxLevel);
     });
 
     test('pairs are monotonically non-decreasing', () {
@@ -112,7 +114,8 @@ void main() {
     });
 
     test('minimum spawn rate is at least 600ms (saturation guard)', () {
-      expect(StarCatcherLevelConfig.levelSpawnMs.last, greaterThanOrEqualTo(600));
+      expect(
+          StarCatcherLevelConfig.levelSpawnMs.last, greaterThanOrEqualTo(600));
     });
   });
 
@@ -127,7 +130,9 @@ void main() {
     });
 
     test('stones are monotonically non-decreasing', () {
-      for (int i = 1; i < SteppingStonesLevelConfig.stonesPerLevel.length; i++) {
+      for (int i = 1;
+          i < SteppingStonesLevelConfig.stonesPerLevel.length;
+          i++) {
         expect(
           SteppingStonesLevelConfig.stonesPerLevel[i],
           greaterThanOrEqualTo(SteppingStonesLevelConfig.stonesPerLevel[i - 1]),
@@ -137,7 +142,8 @@ void main() {
     });
 
     test('max stones fit viewport (stones <= 18)', () {
-      expect(SteppingStonesLevelConfig.stonesPerLevel.last, lessThanOrEqualTo(18));
+      expect(
+          SteppingStonesLevelConfig.stonesPerLevel.last, lessThanOrEqualTo(18));
     });
   });
 
@@ -192,10 +198,13 @@ void main() {
     });
 
     test('treasures are monotonically non-decreasing', () {
-      for (int i = 1; i < TreasureHuntLevelConfig.treasuresPerLevel.length; i++) {
+      for (int i = 1;
+          i < TreasureHuntLevelConfig.treasuresPerLevel.length;
+          i++) {
         expect(
           TreasureHuntLevelConfig.treasuresPerLevel[i],
-          greaterThanOrEqualTo(TreasureHuntLevelConfig.treasuresPerLevel[i - 1]),
+          greaterThanOrEqualTo(
+              TreasureHuntLevelConfig.treasuresPerLevel[i - 1]),
           reason: 'Level ${i + 1} treasures should be >= Level $i treasures',
         );
       }

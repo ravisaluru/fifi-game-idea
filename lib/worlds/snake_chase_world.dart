@@ -16,7 +16,8 @@ class _Obstacle {
   final double radius;
   final String emoji;
 
-  const _Obstacle({required this.pos, required this.radius, required this.emoji});
+  const _Obstacle(
+      {required this.pos, required this.radius, required this.emoji});
 }
 
 class SnakeChaseScreen extends StatefulWidget {
@@ -72,7 +73,9 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
       setState(() {
         _secondsLeft--;
         // Randomize obstacles every 15 seconds
-        if (_secondsLeft % 15 == 0 && _secondsLeft > 0 && _secondsLeft < _surviveSeconds) {
+        if (_secondsLeft % 15 == 0 &&
+            _secondsLeft > 0 &&
+            _secondsLeft < _surviveSeconds) {
           _obstacles = _generateObstacles();
         }
       });
@@ -128,8 +131,10 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
   bool _collidesWithObstacle(Offset pos) {
     if (_screenSize == Size.zero) return false;
     for (final obs in _obstacles) {
-      final obsPixel = Offset(obs.pos.dx * _screenSize.width, obs.pos.dy * _screenSize.height);
-      final posPixel = Offset(pos.dx * _screenSize.width, pos.dy * _screenSize.height);
+      final obsPixel = Offset(
+          obs.pos.dx * _screenSize.width, obs.pos.dy * _screenSize.height);
+      final posPixel =
+          Offset(pos.dx * _screenSize.width, pos.dy * _screenSize.height);
       if ((obsPixel - posPixel).distance < 28.0) return true;
     }
     return false;
@@ -228,7 +233,8 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
     _countdownTimer?.cancel();
     context.read<GameState>().completeWorld(WorldId.snake);
     context.read<GameState>().addCoins(8);
-    VictoryPopup.show(context, didWin: true, coinsEarned: 8, worldName: 'Snake Grassland');
+    VictoryPopup.show(context,
+        didWin: true, coinsEarned: 8, worldName: 'Snake Grassland');
   }
 
   void _onLose() {
@@ -303,7 +309,8 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
                           ),
                         ],
                       ),
-                      child: Text(obs.emoji, style: const TextStyle(fontSize: 36)),
+                      child:
+                          Text(obs.emoji, style: const TextStyle(fontSize: 36)),
                     ),
                   )),
 
@@ -359,5 +366,3 @@ class _SnakeChaseScreenState extends State<SnakeChaseScreen>
     );
   }
 }
-
-
